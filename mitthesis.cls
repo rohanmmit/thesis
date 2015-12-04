@@ -434,13 +434,15 @@ reserved.\par\permission}}
 % to \supervisor
 \newbox\@titlesupervisor 	\newbox\@abstractsupervisor
 
-\def\supervisor#1#2{\setbox\@titlesupervisor\vbox
+\def\supervisor#1{\setbox\@titlesupervisor\vbox
   {\unvbox\@titlesupervisor \vskip 10pt% plus 1fil minus 1fil
   \def\baselinestretch{1}\large
-  \signature{Certified by}{#1 \\ #2 \\ Thesis Supervisor}}
-  \setbox\@abstractsupervisor\vbox{\unvbox\@abstractsupervisor
-  \vskip\baselineskip \def\baselinestretch{1}\@normalsize 
-  \par\noindent Thesis Supervisor: #1 \\ Title: #2}}
+  \signature{Certified by}{#1 \\ Thesis Supervisor}}}
+
+\def\cosupervisor#1#2{\setbox\@titlesupervisor\vbox
+  {\unvbox\@titlesupervisor \vskip 10pt% plus 1fil minus 1fil
+  \def\baselinestretch{1}\large
+  \signature{Certified by}{#1, #2 \\ Thesis Co-Supervisor}}}
 
 % department chairman, not thesis committee chairman
 \def\chairman#1#2{\gdef\@chairmanname{#1}\gdef\@chairmantitle{#2}}
@@ -463,7 +465,7 @@ by\par
 \choosecase{\@degree}
 \par
 at the
-\par\MIT\par
+\Mit\par
 \@degreemonth\ \@degreeyear
 \par
 \@copyrightnotice
