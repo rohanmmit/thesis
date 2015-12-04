@@ -5,6 +5,6 @@ default: tex
 TARGET := main.tex
 
 tex:
-	pdflatex $(TARGET)
+	latexmk -pdf -silent -quiet $(TARGET)
 clean:
 	latexmk -CA
