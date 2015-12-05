@@ -48,30 +48,30 @@ architecture of the system.
 
 \subsection{Storage Layer}
 
-The storage layer \ref{storage_ch} is responsible for storing raw EEG patient
-data and a copy of the calculated spectrogram. This datastore must be optimized
-for both reads and writes of array based data for multidimensional arrays on
-the order to tens to hundreds of GB.
+The storage layer, discuss in detail in chapter \ref{storage_ch}, is responsible for
+storing raw EEG patient data and a copy of the calculated spectrogram. This
+datastore must be optimized for both reads and writes of array based data for
+multidimensional arrays on the order to tens to hundreds of GB.
 
 \subsection{Compute Layer}
 
-The compute layer \ref{compute_ch} is meant to be an extendible module which
-handles the algorithms to calculate the spectrogram and other EEG related
-calculations. As we discuss in \ref{discuss_ch:future_work}, there are several
-extensions the project can take, thus it is important that an interested
-developer can easily add functionality to this layer. In addition, the compute
-layer contains two servers, one to server the array based data, interfacing
-with the optimized EEG algorithms, and a lightweight server for the web
-resources to be served to the visualization layer.
+The compute layer, discuss in detail in chapter \ref{compute_ch}, is meant to be an
+extendible module which handles the algorithms to calculate the spectrogram and
+other EEG related calculations. As we discuss in \ref{discuss_ch:future_work},
+there are several extensions the project can take, thus it is important that an
+interested developer can easily add functionality to this layer. In addition,
+the compute layer contains two servers, one to server the array based data,
+interfacing with the optimized EEG algorithms, and a lightweight server for the
+web resources to be served to the visualization layer.
 
 \subsection{Visualization Layer}
 
-The visualization layer \ref{vis_ch} is a browser based module that renders the
-data to the client. The interface allows users to query based on a patient's id
-(medical record number) and view a spectrogram for a given time interval. Since
-enabling interactivity is an important design criteria, we have designed and
-built a optimization module for time series visualization in the browser,
-Visgoth.
+The visualization layer, discussed in detail in chapter \ref{vis_ch}, is a browser
+based module that renders the data to the client. The interface allows users to
+query based on a patient's id (medical record number) and view a spectrogram
+for a given time interval. Since enabling interactivity is an important design
+criteria, we have designed and built a optimization module for time series
+visualization in the browser, Visgoth.
 
 \section{Usage}
 

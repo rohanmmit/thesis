@@ -71,12 +71,12 @@ workload requires efficient reading of chunks of the matrix.
 The storage layer is implemented in C++, providing a common interface to access
 array based datasets. A \c{StorageBackend} is created by inheriting from
 \c{AbstractStorageBackend} and implementing the methods described in
-\ref{storage_ch:api}, using an existing storage system.. This design allows us to
-interchange storage systems without affecting other layers within the overall
-system. To compare the tradeoffs between different array store systems for each
-workload, we implement 3 version of \c{StorageBackend} using two existing
-systems, HDF5 \cite{hdf5} and TileDB \cite{tiledb} and our own implementation
-as a baseline.
+\ref{storage_ch:api}, using an existing storage system. This design allows us
+to interchange storage systems without affecting other layers within the
+overall system. To compare the tradeoffs between different array store systems
+for each workload, we implement 3 version of \c{StorageBackend} using two
+existing systems, HDF5 \cite{hdf5} and TileDB \cite{tiledb} and our own
+implementation as a baseline.
 
 We begin by describing the API in \ref{storage_ch:api} followed by a description of
 each implementation and finally discuss some overall optimizations in
