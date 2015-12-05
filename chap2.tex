@@ -1,4 +1,4 @@
-\chapter{Storage Layer}
+\chapter{Storage Layer}\label{storage_ch}
 
 Pinky stores both raw patient data (EEG readings) and calculated visualizations
 (spectrograms). The raw EEG data is simply a matrix with a column for each
@@ -44,7 +44,7 @@ biological and physical signals. During ingestion, the data is read in chunks
 from an input EDF file and converted for storage within the system. This
 workload requires the storage system to efficiently handle the addition of
 large datasets. We evaluate the performance when ingesting data of several
-implementations in \ref{ch2:ingestion-exp}.
+implementations in \ref{storage_ch:ingestion-exp}.
 
 
 \subsection{Precomputation Workload}
@@ -71,18 +71,18 @@ workload requires efficient reading of chunks of the matrix.
 The storage layer is implemented in C++, providing a common interface to access
 array based datasets. A \c{StorageBackend} is created by inheriting from
 \c{AbstractStorageBackend} and implementing the methods described in
-\ref{ch2:api}, using an existing storage system.. This design allows us to
+\ref{storage_ch:api}, using an existing storage system.. This design allows us to
 interchange storage systems without affecting other layers within the overall
 system. To compare the tradeoffs between different array store systems for each
 workload, we implement 3 version of \c{StorageBackend} using two existing
 systems, HDF5 \cite{hdf5} and TileDB \cite{tiledb} and our own implementation
 as a baseline.
 
-We begin by describing the API in \ref{ch2:api} followed by a description of
+We begin by describing the API in \ref{storage_ch:api} followed by a description of
 each implementation and finally discuss some overall optimizations in
-\ref{ch2:opt}.
+\ref{storage_ch:opt}.
 
-\subsection{StorageBackend API}\label{ch2:api}
+\subsection{StorageBackend API}\label{storage_ch:api}
 
 The \c{StorageBackend} API allows creating, reading, and writing arrays. Each
 array is accessed by providing a patient's unique medical record number,
@@ -127,7 +127,7 @@ disk.
 \subsubsection{\c{void open\_array(string mrn);}}
 The \c{open\_array} function prepares an array for reading or writing. This
 function typically caches certain values for more optimized used. This is
-discussed further in \ref{ch2:opt}.
+discussed further in \ref{storage_ch:opt}.
 
 \subsubsection{\c{void read\_array(string mrn, int ch, int start\_offset, int end\_offset, float* buf);}}
 \c{read\_array} takes in a channel (column) to read, \c{ch}, and a
@@ -210,7 +210,7 @@ metadata so we store the \c{ArrayMetadata} as JSON data in a file. When
 defining the array a flag is set to order the data in column major order as the
 \c{BinaryBackend} does.
 
-\subsection{Optimizations}\label{ch2:opt}
+\subsection{Optimizations}\label{storage_ch:opt}
 
 When designing the \c{AbstractStorageBackend} performance was an important
 factor. Internally we allow child classes to specify a template type \c{T} as
@@ -224,12 +224,12 @@ external API and internally manage access to each library efficiently.
 \section{Related Work}
 TODO
 
-\section{Evaluation}\label{ch2:evaluation}
+\section{Evaluation}\label{storage_ch:evaluation}
 
 We evaluate the performance of the different \c{StorageBackend} implementations
 by testing measuring the time taken to perform file ingestions
-\ref{ch2:ingestion-exp} and spectrogram precomputation
-\ref{ch2:precompute-exp}. All of these experiments were run on the CSAIL
+\ref{storage_ch:ingestion-exp} and spectrogram precomputation
+\ref{storage_ch:precompute-exp}. All of these experiments were run on the CSAIL
 OpenStack infrastructure. We used allocated three instances on `isolated'
 hosts, where the virtual machine will run using a hardware thread. Each machine
 had 4 cores available with 8GB of ram and Intel Xeon 2.27GHz processors. Each
@@ -246,7 +246,7 @@ The source code for the experiments and necessary running scripts are available
 in the project repository \cite{eeg-toolkit}. The repository contains
 instructions for building the project and running the experiments.
 
-\subsection{Ingestion Experiment}\label{ch2:ingestion-exp}
+\subsection{Ingestion Experiment}\label{storage_ch:ingestion-exp}
 The ingestion experiment takes an EDF file and converts it to the appropriate
 \c{StorageBackend} format. File sizes ranged in powers of 2 from 1GB to 128GB.
 The largest EDF file in the corpus was 150GB, and files commonly range from
@@ -256,7 +256,7 @@ varying the file size, we also vary how much data is read/written in chunks
 from the input file. To reduce system memory consumption we varied chunk sizes
 in powers of 2 from 64MB to 128MB.
 
-\subsection{Precompute Experiment}\label{ch2:precompute-exp}
+\subsection{Precompute Experiment}\label{storage_ch:precompute-exp}
 The precomputation experiment calculates the spectrogram for a given medical
 record number. We use the same file sizes as in the ingestion experiment, using
 the ingested data for this calculation of the spectrogram. Similarly to the
