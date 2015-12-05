@@ -31,10 +31,12 @@
 %% some PDF conversions mess up the ligatures.  -LB, 1/22/2014
 \usepackage{cmap}
 \usepackage[T1]{fontenc}
-\pagestyle{plain}
-\renewcommand{\c}[1]{\texttt{#1}}
+\usepackage{hyperref}
 \usepackage{listings}
 \usepackage{xcolor}
+
+\pagestyle{plain}
+\renewcommand{\c}[1]{\texttt{#1}}
 \lstset { %
     language=C++,
     backgroundcolor=\color{black!5}, % set backgroundcolor
