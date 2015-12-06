@@ -39,12 +39,12 @@ requiring efficient reads.
 
 Once the patient scan is complete, the raw data file can be ingested into the
 system for analysis. The raw data is initially stored in the European Data
-Format (EDF)\cite{edf}, a simple binary format for storing multichannel
+Format (EDF) \cite{edf}, a simple binary format for storing multichannel
 biological and physical signals. During ingestion, the data is read in chunks
 from an input EDF file and converted for storage within the system. This
 workload requires the storage system to efficiently handle the addition of
 large datasets. We evaluate the performance when ingesting data of several
-implementations in \ref{storage-ch:ingestion-exp}.
+implementations in Section~\ref{storage-ch:ingestion-exp}.
 
 
 \subsection{Precomputation Workload}
@@ -54,10 +54,10 @@ the spectrogram for the patient. This precomputation step is important for
 minimizing the latency when serving the visualization. The precomputation
 calculation involves reading columns of the raw data to perform the spectrogram
 calculation and writing the spectrogram matrix back to the datastore. The
-details of the calculation are described in section
-\ref{compute-ch:design-spectrogram}. This workload requires efficient reading
-of individual columns in the raw data and, similarly to the ingestion workload,
-the ability to write dense matrices efficiently.
+details of the calculation are described in
+Section~\ref{compute-ch:design-spectrogram}. This workload requires efficient
+reading of individual columns in the raw data and, similarly to the ingestion
+workload, the ability to write dense matrices efficiently.
 
 \subsection{Visualization Serving Workload}
 
@@ -71,17 +71,17 @@ workload requires efficient reading of chunks of the matrix.
 The storage layer is implemented in C++, providing a common interface to access
 array based datasets. A \c{StorageBackend} is created by inheriting from
 \c{AbstractStorageBackend} and implementing the methods described in
-\ref{storage-ch:api}, using an existing storage system. This design allows us
-to interchange storage systems without affecting other layers within the
-overall system. To compare the tradeoffs between different array store systems
-for each workload, we implement 3 version of \c{StorageBackend} using two
-existing systems, HDF5 \cite{hdf5} and TileDB \cite{tiledb} and our own
-implementation as a baseline.
+Section~\ref{storage-ch:api}, using an existing storage system. This design
+allows us to interchange storage systems without affecting other layers within
+the overall system. To compare the tradeoffs between different array store
+systems for each workload, we implement 3 version of \c{StorageBackend} using
+two existing systems, HDF5 \cite{hdf5} and TileDB \cite{tiledb} and our own
+implementation as a baseline. \\
 
-We begin by describing the API in \ref{storage-ch:api} followed by a
+We begin by describing the API in Section~\ref{storage-ch:api} followed by a
 description of each implementation, command line programs that are available
-for this layer \ref{storage-ch:implementation-cmd}, and finally discuss some overall optimizations in
-\ref{storage-ch:opt}.
+for this layer Section~\ref{storage-ch:implementation-cmd}, and finally discuss
+some overall optimizations in Section~\ref{storage-ch:opt}.
 
 \subsection{StorageBackend API}\label{storage-ch:api}
 
@@ -128,7 +128,7 @@ disk.
 \subsubsection{\c{void open\_array(string mrn);}}
 The \c{open\_array} function prepares an array for reading or writing. This
 function typically caches certain values for more optimized used. This is
-discussed further in \ref{storage-ch:opt}.
+discussed further in Section~\ref{storage-ch:opt}.
 
 \subsubsection{\c{void read\_array(string mrn, int ch, int start\_offset, int end\_offset, float* buf);}}
 \c{read\_array} takes in a channel (column) to read, \c{ch}, and a
@@ -235,16 +235,16 @@ TODO
 \section{Evaluation}\label{storage-ch:evaluation}
 
 We evaluate the performance of the different \c{StorageBackend} implementations
-by testing measuring the time taken to perform file ingestions
-\ref{storage-ch:ingestion-exp} and spectrogram precomputation
-\ref{storage-ch:precompute-exp}. All of these experiments were run on the CSAIL
-OpenStack infrastructure. We used allocated three instances on `isolated'
-hosts, where the virtual machine will run using a hardware thread. Each machine
-had 4 cores available with 8GB of ram and Intel Xeon 2.27GHz processors. Each
-machine had 333GB of disk space available for the calculations. To reduce
-variability between experiments, each experiment was run a total of 3 times,
-once on each machine and between runs of each experiment we clear the file
-system caches.\\
+by testing measuring the time taken to perform file ingestions in
+Section~\ref{storage-ch:ingestion-exp} and spectrogram precomputation in
+Section~\ref{storage-ch:precompute-exp}. All of these experiments were run on
+the CSAIL OpenStack infrastructure. We used allocated three instances on
+`isolated' hosts, where the virtual machine will run using a hardware thread.
+Each machine had 4 cores available with 8GB of ram and Intel Xeon 2.27GHz
+processors. Each machine had 333GB of disk space available for the
+calculations. To reduce variability between experiments, each experiment was
+run a total of 3 times, once on each machine and between runs of each
+experiment we clear the file system caches.\\
 
 These two use cases were chosen since they are the primary workloads of the
 system and we want to understand how the different implementations perform for

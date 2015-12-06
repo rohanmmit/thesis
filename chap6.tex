@@ -8,11 +8,11 @@ scalable design. These initial programs would read data from an EDF file,
 perform the spectrogram calculations and render a static image of 1 to 2 hours
 of data. From this, our design separated the workflow into the three layers,
 storage, compute and visualization. Converting the implementations first to
-Python and then to C++ (see \ref{discuss-ch:abandon}) and implementing a web based
-visualization was non-trival since testing the correctness of the algorithms
-could not be done until all of the layers were in place. Once an initial
-implementation was completed, it was easier to abstract different portions or
-change parts of the calculations for more optimized use. \\
+Python and then to C++ (see Section~\ref{discuss-ch:abandon}) and implementing
+a web based visualization was non-trival since testing the correctness of the
+algorithms could not be done until all of the layers were in place. Once an
+initial implementation was completed, it was easier to abstract different
+portions or change parts of the calculations for more optimized use. \\
 
 \subsection{Storage Layer}
 
@@ -30,14 +30,15 @@ different store for debugging.
 
 The main challenge with the compute layer was becoming familiar with the
 medical domain and the algorithms required for different computations. As
-discussed in \ref{discuss-ch:abandon}, the performance of this layer can greatly
-affect the system as a whole since it connects the storage and visualizations
-layers to one another. The most import design decision here was the choice of
-language, a tradeoff between development ease and performance. Having an
-efficient way to extract data from storage, compute on it, and send it to the
-client was essential. By choosing C++ over C we were able to take advantage of
-the Armadillo \cite{arma} library for linear algebra processing and an open source
-websocket library \cite{websocket-server} for sending data over the network.
+discussed in Section~\ref{discuss-ch:abandon}, the performance of this layer
+can greatly affect the system as a whole since it connects the storage and
+visualizations layers to one another. The most import design decision here was
+the choice of language, a tradeoff between development ease and performance.
+Having an efficient way to extract data from storage, compute on it, and send
+it to the client was essential. By choosing C++ over C we were able to take
+advantage of the Armadillo \cite{arma} library for linear algebra processing
+and an open source websocket library \cite{websocket-server} for sending data
+over the network.
 
 \subsection{Visualization Layer}
 
@@ -140,15 +141,18 @@ able to see this annotation when browsing the spectrogram.
 \subsection{Change Point Detection and Clustering}\label{discuss-ch:cpd}
 
 As the corpus of EEG data grows, marking annotations by hand as described in
-\ref{discuss-ch:annotations} is rather tedious.  A more automated way would be to scan
-try to automatically cut the spectrogram signal into segments, characterized by
-changes in average power. Once each segment is generated, one could cluster
-these segments and present them to an analyst for classification. During the
-patient scan, the majority of the time goes without incident, giving rise to
-large periods of time with no activity. By automatically grouping these
-sections together, an analyst would be able to quickly pinpoint areas of
-interest and mark them. The difficult part of this problem is properly
-extracting features from the dataset for classification. \\
+Section~\ref{discuss-ch:annotations} is rather tedious.  A more automated way
+would be to scan try to automatically cut the spectrogram signal into segments,
+characterized by changes in average power using the cumulative sum algorithm
+\cite{cumsum}. Once each segment is generated, one could cluster these segments
+and present them to an analyst for classification. During the patient scan, the
+majority of the time goes without incident, giving rise to large periods of
+time with no activity. By automatically grouping these sections together, an
+analyst would be able to quickly pinpoint areas of interest and mark them. The
+difficult part of this problem is properly extracting features from the dataset
+for classification. Some schemes using texture analysis for feature extraction
+are recommended in \cite{texture-classification1} and
+\cite{texture-classification2} \\
 
 \subsection{Distributed Architecture}\label{discuss-ch:dist-arch}
 
@@ -165,9 +169,10 @@ The system is naturally partitionable by patient records, which could simplify
 the design which would only require data to be replicated and access parts of
 an array over the network. \\
 
-Given the changes proposed in \ref{discuss-ch:annotations} and \ref{discuss-ch:cpd} a
-distributed data service, similar to the DataHub\cite{datahub} would be ideal.
-This service would allow hospitals and medical research institutions around the
-world to host patient data for collaborative analysis, using the Pinky
-computation and visualization layers to power the analysis.
+Given the changes proposed in Section~\ref{discuss-ch:annotations} and
+Section~\ref{discuss-ch:cpd} a distributed data service, similar to the
+DataHub\cite{datahub} would be ideal.  This service would allow hospitals and
+medical research institutions around the world to host patient data for
+collaborative analysis, using the Pinky computation and visualization layers to
+power the analysis.
 

@@ -32,8 +32,8 @@ display. This server is separate from the websocket server to simplify the
 implementation since the webapp server is not subject to the same performance
 requirements when transferring datasets over the network. The separation of
 these two servers allows for modules to be easily added to the webapp framework
-using existing frameworks (see \ref{compute-ch:implementation-webapp}) such as
-authentication.
+using existing frameworks (see Section~\ref{compute-ch:implementation-webapp})
+such as authentication.
 
 \subsection{File Ingestion Daemon}
 
@@ -75,14 +75,14 @@ When a client loads the Pinky frontend into their browser, the client sends a
 request to the websocket server to open a connection. When the client wishes to
 browse a patient's data, a request is send specifying the patient's \c{mrn},
 the \c{channel} (LL, LP, RL, RP, see
-\ref{compute-ch:implementation-spectrogram}), a \c{start\_time} and \c{end\_time}
-given in hours. \\
+Section~\ref{compute-ch:implementation-spectrogram}), a \c{start\_time} and
+\c{end\_time} given in hours. \\
 
 The websocket server then requests a spectrogram with the given values either
 computing the spectrogram on the fly or using a precomputed spectrogram
 calculation. The websocket server with potentially downsample the response to
 meet client latency requirements, however, this functionality is detailed in
-chapter \ref{visgoth-ch}. \\
+Chapter~\ref{visgoth-ch}. \\
 
 To send data back to the client, a JSON encoded header is created, notifying
 the client on the calculation results. The header contains a small amount of
@@ -117,9 +117,9 @@ added. Taking advantage of the Watchdog \cite{watchdog} library, the script is
 able to receive events for changes to the filesystem for a given folder. Upon
 receiving a notification, the script will convert the file to the necessary
 format and also precompute the spectrogram. To process the file, the script
-calls the command line programs \c{edf\_converter <mrn>}
-\ref{storage-ch:implementation-cmd} and \c{precompute\_spectrogram <mrn>}
-\ref{compute-ch:implementation-cmd}. \\
+calls the command line programs \c{edf\_converter
+  <mrn>}~\ref{storage-ch:implementation-cmd} and \c{precompute\_spectrogram
+  <mrn>}~\ref{compute-ch:implementation-cmd}. \\
 
 This functionality allows an administrator to dump EDF files onto the
 filesystem of the server and allow them to automatically be queried by an
@@ -159,7 +159,7 @@ to each parameter describe it's use.
 
 Using the \c{SpecParams} object, we can calculate the spectrogram for the EEG
 data. The algorithm's pseudocode is presented below. A detailed description of
-the algorithm can be found in \ref{compute-ch:design-spectrogram}.
+the algorithm can be found in Section~\ref{compute-ch:design-spectrogram}.
 
 \begin{lstlisting}
 void eeg_spectrogram(SpecParams* spec_params, int ch, fmat& spec_mat)
@@ -189,8 +189,8 @@ void eeg_spectrogram(SpecParams* spec_params, int ch, fmat& spec_mat)
 The definition of the constants \c{DIFFERENCE\_PAIRS} and \c{NUM\_DIFFS} are
 omitted from the pseudocode for simplicity. The \c{DIFFERENCE\_PAIRS} simply
 defines which channels to take differences to form a region (see
-\ref{compute-ch:design-spectrogram}) and \c{NUM\_DIFFS=4} since we compute the
-spectrogram across four different regions of the brain. \\
+Section~\ref{compute-ch:design-spectrogram}) and \c{NUM\_DIFFS=4} since we
+compute the spectrogram across four different regions of the brain. \\
 
 The FFT algorithm is implemented using the FFTW library \cite{fftw} for optimal
 performance and uses a Hanning windowing function between FFT runs. We make use

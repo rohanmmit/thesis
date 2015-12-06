@@ -52,7 +52,7 @@ chrome/FF).
 
 \subsection{Interface}
 
-The interface is shown in Figure \ref{fig:whole-interface}. This interface
+The interface is shown in Figure~\ref{fig:whole-interface}. This interface
 shows a sample of the patient \c{005} being rendered between the second and
 third hour of the scan. These parameters are specified in the top bar with the
 ability for the analyst to scroll to previous or next hour with a single click.
@@ -68,11 +68,11 @@ window. \\
 \end{figure}
 
 Settings are accessed by clicking the small gear on the far right of the
-interface and the options are shown in Figure \ref{fig:settings}. The settings
+interface and the options are shown in Figure~\ref{fig:settings}. The settings
 page allows an analyst to change the rendering mode, time interval and select
 options for interpolation and the visualization scale. In addition, there are
 two keyboard shortcuts which allow an analyst to change the amplitude scale or
-zoom in on the visualization. Figure \ref{fig:zoomed-region} shows the result
+zoom in on the visualization. Figure~\ref{fig:zoomed-region} shows the result
 of a single region when a user zoomed in. \\
 
 \begin{figure}[h]
@@ -85,7 +85,7 @@ of a single region when a user zoomed in. \\
 
 The interface shows a spectrogram for each region of the brain, each region is
 label in the upper left hand corner with \c{LL}, \c{LP}, \c{RP}, or \c{RL}.
-Next to these labels, as can be seen in Figure \ref{fig:zoomed-region} is a
+Next to these labels, as can be seen in Figure~\ref{fig:zoomed-region} is a
 small box containing axis information, specifying where the user's mouse
 currently is. In this box the current timestamp (x-axis) and frequency (y-axis)
 are show. In addition, the current amplitude value in dB is given as well as
@@ -101,7 +101,7 @@ the current amplitude viewing range. \\
 \end{figure}
 
 While loading the interface blurs the spectrograms and presents a loading bar
-to the user, as shown in Figure \ref{fig:loading}. This is done to
+to the user, as shown in Figure~\ref{fig:loading}. This is done to
 prevent confusion if there is a delay between the rendering of each region. If
 a region is blurred and has a loading bar on it, it is clear that the new
 region has not yet updated to the client's latest query. \\
@@ -116,7 +116,7 @@ region has not yet updated to the client's latest query. \\
 
 If an analyst enters an invalid \c{mrn}, the interface responds by clearing all
 of the rendered spectrograms and displaying a small error message as shown in
-Figure \ref{fig:error}. An invalid \c{mrn} is simply one which the
+Figure~\ref{fig:error}. An invalid \c{mrn} is simply one which the
 \c{StorageBackend} does not contain an array for. This could be from a user
 error or when an array is currently being ingested into the system. This user
 interaction is important to avoid analyst confusion if the display did not
@@ -139,7 +139,7 @@ Communication is primarily done via a websocket which is connected to the
 compute later websocket server. Data requests are sent via JSON to the
 websocket server and binary responses are decoded to extract the computed
 spectrogram data for a given region. The binary protocol is described in
-section \ref{compute-ch:implementation-ws-server}.
+Section~\ref{compute-ch:implementation-ws-server}.
 
 We make use of the reconnecting-websocket \cite{reconnecting-websocket} library
 to ensure a smooth user experience is the analyst leaves the page long enough
