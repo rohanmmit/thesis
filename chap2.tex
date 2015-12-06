@@ -54,10 +54,10 @@ the spectrogram for the patient. This precomputation step is important for
 minimizing the latency when serving the visualization. The precomputation
 calculation involves reading columns of the raw data to perform the spectrogram
 calculation and writing the spectrogram matrix back to the datastore. The
-details of the calculation are described in \ref{ch3:spectrogram}. This
-workload requires efficient reading of individual columns in the raw data and,
-similarly to the ingestion workload, the ability to write dense matrices
-efficiently.
+details of the calculation are described in section
+\ref{compute-ch:design-spectrogram}. This workload requires efficient reading
+of individual columns in the raw data and, similarly to the ingestion workload,
+the ability to write dense matrices efficiently.
 
 \subsection{Visualization Serving Workload}
 

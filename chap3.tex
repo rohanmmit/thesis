@@ -25,7 +25,7 @@ requests, processing the requests in parallel to reduce latency.
 
 \subsection{Webapp Server}
 
-The webapp server is responsible for serving web resources such as Javascript,
+The webapp server is responsible for serving web resources such as JavaScript,
 HTML, and CSS to the client. The scripts that are sent to the client are
 responsible for communicating with the websocket server, retrieving data for
 display. This server is separate from the websocket server to simplify the
@@ -61,7 +61,7 @@ module since the performance gains with a compiled language were necessary. C++
 was chosen over pure C for the available libraries for linear algebra
 processing \cite{arma} and network communication \cite{websocket-server}.
 
-\subsection{Websocket Server}
+\subsection{Websocket Server}\label{compute-ch:implementation-ws-server}
 
 The websocket server primarily depends on the open source library
 \cite{websocket-server}. This library implements the websocket protocol and
