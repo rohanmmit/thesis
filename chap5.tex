@@ -1,4 +1,4 @@
-\chapter{Discussion}\label{discuss_ch}
+\chapter{Discussion}\label{discuss-ch}
 
 \section{Design Challenges}
 
@@ -8,7 +8,7 @@ scalable design. These initial programs would read data from an EDF file,
 perform the spectrogram calculations and render a static image of 1 to 2 hours
 of data. From this, our design separated the workflow into the three layers,
 storage, compute and visualization. Converting the implementations first to
-Python and then to C++ (see \ref{discuss_ch:abandon}) and implementing a web based
+Python and then to C++ (see \ref{discuss-ch:abandon}) and implementing a web based
 visualization was non-trival since testing the correctness of the algorithms
 could not be done until all of the layers were in place. Once an initial
 implementation was completed, it was easier to abstract different portions or
@@ -30,7 +30,7 @@ different store for debugging.
 
 The main challenge with the compute layer was becoming familiar with the
 medical domain and the algorithms required for different computations. As
-discussed in \ref{discuss_ch:abandon}, the performance of this layer can greatly
+discussed in \ref{discuss-ch:abandon}, the performance of this layer can greatly
 affect the system as a whole since it connects the storage and visualizations
 layers to one another. The most import design decision here was the choice of
 language, a tradeoff between development ease and performance. Having an
@@ -50,7 +50,7 @@ the size of a visualization is capped by the number of pixels in the client's
 screen. This allows us to still give rich representations in our visualizations
 but without adding latency to the analysis.
 
-\section{Abandoned Designs}\label{discuss_ch:abandon}
+\section{Abandoned Designs}\label{discuss-ch:abandon}
 
 There were two main directions that the project could have taken that were
 abandoned. Initially we wanted to explore performing the EEG calculations on a
@@ -96,7 +96,7 @@ Along with this vein the entire project is available on Github
 \cite{eeg-toolkit} for use in the hopes that other doctors will make use of the
 software.
 
-\section{Future Work}\label{discuss_ch:future_work}
+\section{Future Work}\label{discuss-ch:future_work}
 
 Pinky provides the most basic interaction that an analyst can use to work with
 EEG data, namely they can efficiently scroll through patient records on demand.
@@ -124,7 +124,7 @@ to query Pinky's storage layer with. The importance of this lies in the ability
 to select patients with similar characteristics or treatments and analyse their
 data together.
 
-\subsection{Spectrogram Annotations}\label{discuss_ch:annotations}
+\subsection{Spectrogram Annotations}\label{discuss-ch:annotations}
 
 In addition to viewing the datasets, it would be beneficial for analysts to
 also be able to mark noteworthy sections of the spectrogram. This could be for
@@ -137,10 +137,10 @@ would be able to associated a small amount of free text with the annotation,
 such as a note to why the event is interesting. Subsequent viewers would be
 able to see this annotation when browsing the spectrogram.
 
-\subsection{Change Point Detection and Clustering}\label{discuss_ch:cpd}
+\subsection{Change Point Detection and Clustering}\label{discuss-ch:cpd}
 
 As the corpus of EEG data grows, marking annotations by hand as described in
-\ref{discuss_ch:annotations} is rather tedious.  A more automated way would be to scan
+\ref{discuss-ch:annotations} is rather tedious.  A more automated way would be to scan
 try to automatically cut the spectrogram signal into segments, characterized by
 changes in average power. Once each segment is generated, one could cluster
 these segments and present them to an analyst for classification. During the
@@ -150,7 +150,7 @@ sections together, an analyst would be able to quickly pinpoint areas of
 interest and mark them. The difficult part of this problem is properly
 extracting features from the dataset for classification. \\
 
-\subsection{Distributed Architecture}\label{discuss_ch:dist-arch}
+\subsection{Distributed Architecture}\label{discuss-ch:dist-arch}
 
 The current architecture allows an analyst to import and view data that can fit
 on a single machine. There are two downsides to this, the data corpus will
@@ -165,7 +165,7 @@ The system is naturally partitionable by patient records, which could simplify
 the design which would only require data to be replicated and access parts of
 an array over the network. \\
 
-Given the changes proposed in \ref{discuss_ch:annotations} and \ref{discuss_ch:cpd} a
+Given the changes proposed in \ref{discuss-ch:annotations} and \ref{discuss-ch:cpd} a
 distributed data service, similar to the DataHub\cite{datahub} would be ideal.
 This service would allow hospitals and medical research institutions around the
 world to host patient data for collaborative analysis, using the Pinky
