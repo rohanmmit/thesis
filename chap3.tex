@@ -204,7 +204,8 @@ void hamming(int windowLength, float* buf)
 {
   for (int i = 0; i < windowLength; i++)
   {
-    buf[i] = 0.54 - (0.46 * cos( 2 * M_PI * (i / ((windowLength - 1) * 1.0))));
+    buf[i] = 0.54 - (0.46 * cos(2 * M_PI *
+                    (i / ((windowLength - 1) * 1.0))));
   }
 }
 \end{lstlisting}
