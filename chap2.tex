@@ -22,10 +22,10 @@ The \c{StorageBackend} abstraction provides a thin layer over existing array
 based storage systems to provide a consistent API for evaluation across
 different systems. The goal is to efficiently expose read/write access to large
 array based datasets. A patient EEG scan can last between 24 hours and 7 days
-[cite?]. The raw output of voltage readings yield a file from tens to hundreds
-of gigabytes in size. We assume that the entire dataset cannot always fit into
-the memory of the server, given that it must concurrently respond to many
-client queries. Thus, the \c{StorageBackend} should rely on maintaining an
+\cite{ceeg-3}. The raw output of voltage readings yield a file from tens to
+hundreds of gigabytes in size. We assume that the entire dataset cannot always
+fit into the memory of the server, given that it must concurrently respond to
+many client queries. Thus, the \c{StorageBackend} should rely on maintaining an
 efficient on disk representation. \\
 
 A \c{StorageBackend} implementation must primarily handle three different
