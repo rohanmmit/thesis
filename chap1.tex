@@ -19,8 +19,8 @@ electrical activity of the brain. \\
 
 Today, doctors are faced with having to store large amounts of patient data
 without analysis since they lack the tools to efficiently view datasets are a
-large scale. To remedy this, we have designed and implemented a system, Pinky,
-which can process large amounts of EEG data, allowing near real-time
+large scale. To address this issue, we have designed and implemented a system,
+Pinky, which can process large amounts of EEG data, allowing near real-time
 interaction for analysis.
 
 
@@ -28,13 +28,13 @@ interaction for analysis.
 
 Pinky is a doctor's newest tool for analysing the brain, see
 Figure~\ref{fig:pinky-and-the-brain}. Working with a team of researchers at
-Massachusetts General Hospital, we have designed and implemented the system to
-handle the fast growing corpus of EEG data that is being collected. This
-end-to-end system handles the storage, computation, and visualization of EEG.
-The goal of the system is to provide a scalable architecture for concurrent
-analysis of patient records with near real time interactivity. Each layer of
-the system has been optimized for use and evaluated across hundreds of GB of
-patient data. \\
+Massachusetts General Hospital (MGH), we have designed and implemented the
+system to handle the fast growing corpus of EEG data that is being collected.
+This end-to-end system handles the storage, computation, and visualization of
+EEG data.  The goal of the system is to provide a scalable architecture for
+concurrent analysis of patient records with near real time interactivity. Each
+layer of the system has been optimized for use and evaluated across hundreds of
+GB of patient data. \\
 
 \begin{figure}[h]
 \begin{center}
@@ -46,8 +46,67 @@ patient data. \\
 
 \section{Overview of EEG Analysis}
 
-TODO:
-What is EEG analysis? Why is it important? What is the scale of the problem? How have we fixed it?
+Seizures are defined as transient aberrations in the brain's electrical
+activity. People with the central nervious system disorder, epilepsy, suffer
+from recurrent seizures, often happening suddenly at unpredictable times.  A
+seizure can vary from a lapse of attention to a whole-body convulsion.
+Frequent seizures are dangerous, as they can increase risk of sustaining
+physical injuries or even result in death \cite{eeg-ml}. \\
+
+A method for detecting the onset of epileptic seizures is done by analysing the
+scalp EEG, a non-invasive measure of the brain's electrical activity.
+Continuous EEG (cEEG) data is typically recorded using 19 silver/silver
+chloride electrodes, affixed to the scalp according to the international 10-20
+system \cite{ceeg-1}. Figure~\ref{fig:electrodes} shows a drawing of the
+placement of sensors on a patient's scalp. \\
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale=0.5]{./img/electrodes.png}
+\caption{Electrode placement on a patient's scalp.}
+\label{fig:electrodes}
+\end{center}
+\end{figure}
+
+EEG recordings typically take place over a 24-hour period and must be reviewed
+and screen by trained individuals such as attending physicians,
+epilepsy/neurophysiology fellows, or registered EEG technicians
+(encephalographers) \cite{ceeg-3}. Unlike traditional epilepsy monitoring units
+which focus on provoking and capturing seizures, the goal of cEEG studies is to
+rapidly and efficiently identify seizures for future prevention. This leads to
+an increase in the number of cEEG recordings for preventative measures, and
+intensive care unit centers become overwhelmed with the analysis of the growing
+dataset and small number of trained individuals. Methods to screen long EEG
+recordings without sacrificing accuracy are necessary to be able to process all
+of the data. \\
+
+Typically, EEGs displays no more than 10-15 seconds of data per screen of raw
+voltage readings and requires an analyst to simultaneously inspection multiple
+channels. On the contrary, a compressed spectral array \cite{csa} or
+spectrogram display may show 2 to 8 hours of data on a single color
+map\cite{ceeg-3}. This allows analysts to quickly screen long periods of EEG
+data, determining which segments, if any, require direct review. Spectrogram
+review reduces cEEG review time by $78\%$ \cite{ceeg-2}, with minimal loss of
+sensitivity compared with conventional review.\\
+
+Spectrograms are the most widely used compressed data format for EEG data
+\cite{ceeg-1}. A spectrogram consists of three-dimensional plots with time on
+the x-axis, frequency on the y-axis, and EEG power on the z-axis. An analyst
+typically views four spectrograms concurrently, mapped to different regions of
+the brain. Each region is formed by using multiple EEG channels where an EEG
+channel is formed by taking the difference between voltages measured at two
+electrodes. This captures the summed potential of millions of neurons
+\cite{eeg-ml}. Figure~\ref{fig:electrodes} shows the electrode placement on
+the patient's scalp, yielding four regions for analysis: left lateral power,
+\c{LL}, (Fp1-F7, F7-T3, T3-T5, T5-O1), left parasagittal power, \c{LP},
+(Fp1-F3, F3-C3, C3-P3, P3-O1), right lateral power, \c{RL}, (Fp2-F8, F8-T4,
+T4–T6, T6-O2), right parasagittal power, \c{RP}, (Fp1-F4, F3-C4, C4-P4, P4-O2).
+\\
+
+As the corpus of data collected as ICU continues to grow, efficient mechanisms
+to store and visualize this data efficiently is key for analysts to quickly
+view patient screenings. Pinky aims to provide this for analysts, giving them a
+simple yet powerful interface to quickly view spectrogram data.
 
 \section{System Architecture}
 
@@ -113,13 +172,24 @@ installation instructions can be found with the github project.
 Pinky make several contributions:
 
 \begin{itemize}
+
   \item Implements an abstraction for array based storage systems.
+
   \item Implements 4 different backends to adhere to the abstraction.
-  \item Evaluates the different backends for multiple input ranges and workloads.
+
+  \item Evaluates the different backends for multiple input ranges and
+    workloads.
+
   \item Implements optimized algorithms for analysing EEG data.
-  \item Provides an extendible framework for accessing array based data and visualizing it in the browser.
+
+  \item Provides an extendible framework for accessing array based data and
+    visualizing it in the browser.
+
   \item Implements scalable in-browser visualizations using the client's GPU.
-  \item Implements a new system, Visgoth, for reducing latency for time series based visualizations.
+
+  \item Implements a new system, Visgoth, for reducing latency for time series
+    based visualizations.
+
 \end{itemize}
 
 These contributions enable doctors and medical expert analysts to interactively
