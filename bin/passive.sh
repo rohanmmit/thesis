@@ -1,5 +1,4 @@
 #!/bin/bash
-
 irregulars="awoken|\
   been|born|beat|\
   become|begun|bent|\
@@ -60,6 +59,6 @@ fi
 
 egrep -n -i --color \
   "\\b(am|are|were|being|is|been|was|be)\
-  \\b[ ]*(\w+ed|($irregulars))\\b" $*
+\\b[ ]*(\w+ed|($irregulars))\\b" $*
 
 exit $?

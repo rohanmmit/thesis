@@ -15,10 +15,10 @@ proof:
 	./bin/weasel.sh *.tex
 	echo
 	echo "passive voice: "
-	-./bin/passive.sh *.tex
+	./bin/passive.sh *.tex
 	echo
 	echo "duplicates: "
-	perl bin/dups.sh *.tex
+	perl bin/dups.pl *.tex
 
 clean:
 	latexmk -CA

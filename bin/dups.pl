@@ -30,25 +30,25 @@ while (1) {
     my @words = split (/(\W+)/) ;
 
     foreach my $word (@words) {
-    # Skip spaces:
-    next if $word =~ /^\s*$/ ;
+      # Skip spaces:
+      next if $word =~ /^\s*$/ ;
 
-    # Skip punctuation:
-    if ($word =~ /^\W+$/) {
-      $LastWord = "" ;
-      next ;
+      # Skip punctuation:
+      if ($word =~ /^\W+$/) {
+        $LastWord = "" ;
+        next ;
+      }
+
+      # Found a dup?
+      if (lc($word) eq lc($LastWord)) {
+        print "$FileName:$LineNum $word\n" ;
+        $DupCount ++ ;
+      } # Thanks to Sean Cronin for tip on case.
+
+      # Mark this as the last word:
+      $LastWord = $word ;
     }
-
-    # Found a dup? 
-    if (lc($word) eq lc($LastWord)) {
-      print "$FileName:$LineNum $word\n" ;
-      $DupCount ++ ;
-    } # Thanks to Sean Cronin for tip on case.
-
-    # Mark this as the last word:
-    $LastWord = $word ;
   }
-}
 
-close FILE ;
+  close FILE ;
 }
