@@ -11,9 +11,9 @@ arrays.  The storage layer meets this requirement by providing an abstraction
 called the \c{StorageBackend} for storing array based data. The abstraction
 gives read and write access to 2-dimensional matrices of \c{float} values.
 Since efficient querying of the data is required in order to provide the
-interactivity that the system demands, we evaluate several different array
-based storage systems and compare the tradeoffs of each against a simple
-storage system that we implemented.
+interactivity that the system demands, we evaluate different array based
+storage systems and compare the tradeoffs of each against a simple storage
+system that we implemented.
 
 
 \section{Design}
@@ -25,8 +25,8 @@ array based datasets. A patient EEG scan can last between 24 hours and 7 days
 \cite{ceeg-3}. The raw output of voltage readings yield a file from tens to
 hundreds of gigabytes in size. We assume that the entire dataset cannot always
 fit into the memory of the server, given that it must concurrently respond to
-many client queries. Thus, the \c{StorageBackend} should rely on maintaining an
-efficient on disk representation. \\
+multiple client queries. Thus, the \c{StorageBackend} should rely on
+maintaining an efficient on disk representation. \\
 
 A \c{StorageBackend} implementation must primarily handle three different
 workloads. The first is data set ingestion. This is a write heavy workload --
@@ -43,7 +43,7 @@ Format (EDF) \cite{edf}, a simple binary format for storing multichannel
 biological and physical signals. During ingestion, the data is read in chunks
 from an input EDF file and converted for storage within the system. This
 workload requires the storage system to efficiently handle the addition of
-large datasets. We evaluate the performance when ingesting data of several
+large datasets. We evaluate the performance when ingesting data with the
 implementations in Section~\ref{storage-ch:ingestion-exp}.
 
 
@@ -165,7 +165,7 @@ general array storage system. Comparing the performance of other systems to the
 \c{BinaryBackend} allows us to see the overhead a more general purpose system
 would incur.\\
 
-The on disk representation is very simple. The first byte of the file contains
+The on disk representation is kept simple. The first byte of the file contains
 a \c{uint32\_t}, containing the length of the header information, $n$. The
 following $n$ bytes contain a json encoded string with the \c{ArrayMetadata}
 information. Following this, the array is written to disk in column major order
@@ -185,10 +185,10 @@ read or written.
 The \c{HDF5Backend} uses the Hierarchical Data Format (HDF) version 5
 \cite{hdf5} to store the data. HDF5 is an open source `technology suite' which
 meets the requirements for storage for our system. HDF5 is capable of
-supporting very diverse datasets at scale, fitting the array based model of our
+supporting diverse datasets at scale, fitting the array based model of our
 EEG data nicely. \\
 
-Integrating HDF5 as a \c{StorageBackend} is very straightforward. Using the
+Integrating HDF5 as a \c{StorageBackend} is straightforward. Using the
 HDF5 C++ bindings, we wrap the library calls to read and write data without API
 methods. HDF5 has it's own metadata storage which we utilize for keeping the
 \c{ArrayMetadata}. One interesting not is in HDF5 you must specify if the array

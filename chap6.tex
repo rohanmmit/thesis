@@ -2,8 +2,8 @@
 
 \section{Design Challenges}
 
-Working with the EEG data proved to be a challenge in itself. Starting with a
-few Matlab processing scripts that work for small datasets, we set to build a
+Working with the EEG data proved to be a challenge in itself. Starting with
+some Matlab processing scripts that work for small datasets, we set to build a
 scalable design. These initial programs would read data from an EDF file,
 perform the spectrogram calculations and render a static image of 1 to 2 hours
 of data. From this, our design separated the workflow into the three layers,
@@ -20,11 +20,11 @@ Creating a useful abstraction for the storage layer was essential for
 evaluating different datastores and maintaining scalability. The performance of
 this layer is likely the most critical for system performance and also the
 hardest to profile and analyse. The difficulty arises from the scale of the
-datasets when bugs arise only for very large files during testing, files larger
-than the disk space on development machines. To verify correctness with
-different backends, conversion between the basckend dataformats was crucial.
-Each backend could dump their data in a csv format and be imported into a
-different store for debugging.
+datasets when bugs arise only for large files during testing, files larger than
+the disk space on development machines. To verify correctness with different
+backends, conversion between the basckend dataformats was crucial.  Each
+backend could dump their data in a csv format and be imported into a different
+store for debugging.
 
 \subsection{Compute Layer}
 
@@ -76,14 +76,14 @@ than rewrite a websocket library, changing the language seemed appropriate.
 
 The lessons here are a reflection of the overall project and what was learned
 throughout the development process. The first point would be working with the
-open source community. Pinky makes use of several different small open source
-projects \cite{edflib} \cite{dropbox-json} \cite{websocket-server}
-\cite{tiledb} in each layer (in addition to larger community libraries) and
-without these, the project would not have been completed. These projects are
-often maintained by individuals as side projects and can contain bugs or be
-incomplete. Recognizing this fact early on was crucial to be able to contribute
-back to the projects that were used and work with the developer to make the
-projects better by submitting patches and helping them pinpoint bugs. \\
+open source community. Pinky makes use of the following open source projects
+\cite{edflib} \cite{dropbox-json} \cite{websocket-server} \cite{tiledb} in each
+layer (in addition to larger community libraries) and without these, the
+project would not have been completed. These projects are often maintained by
+individuals as side projects and can contain bugs or be incomplete. Recognizing
+this fact early on was crucial to be able to contribute back to the projects
+that were used and work with the developer to make the projects better by
+submitting patches and helping them pinpoint bugs. \\
 
 
 Secondly, using the OpenStack infrastructure allowed us to easily allocate new
@@ -101,9 +101,8 @@ software.
 
 Pinky provides the most basic interaction that an analyst can use to work with
 EEG data, namely they can efficiently scroll through patient records on demand.
-In order to further the benefit of such analysis, there are a few directions
-that future work could take. We sketch potential designs for each for future
-projects.
+In order to further the benefit of such analysis, we sketch the following
+potential designs for future projects.
 
 \subsection{Polystore}
 
@@ -113,7 +112,7 @@ id, for example an analyst requests data by giving a patient's \c{mrn}.
 Currently the analyst would have to determine the \c{mrn} to use and would then
 able to use Pinky. An extension to the system would be to allow analysts to
 query patient information to determine which cases to analyze. The current ad
-hoc system involves several different storage systems, so this addition would
+hoc system involves using different storage systems, so this addition would
 expand Pinky to have a polystore architecture. Systems using polystore
 architectures have been address in \cite{bigdawg}. \\
 

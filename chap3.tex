@@ -1,6 +1,6 @@
 \chapter{Compute Layer}\label{compute-ch}
 
-The compute layer is responsible for several important sections of Pinky's
+The compute layer is responsible for two important sections of Pinky's
 functionality. First, this layer handles interaction between the storage layer
 by using the \c{StorageBackend} abstraction to read and write dataset and
 visualization layer by performing calculations a client's request and
@@ -53,8 +53,8 @@ TODO, discussing the algorithms in detail.
 The compute layer is implemented almost entirely in C++ except for the file
 ingestion daemon and webapp server which are written in Python. The Python
 implementations comprise a much smaller part of the compute layer codebase
-since there are many libraries available in the community. Although there is a
-cost for using multiple languages within a system, Python seemed the
+since there are a number of libraries available in the community. Although
+there is a cost for using multiple languages within a system, Python seemed the
 appropriate choice in this circumstance due to the reduced developer time and
 dependency on mature libraries. C++ was chosen for the other parts of the
 module since the performance gains with a compiled language were necessary. C++
@@ -67,9 +67,9 @@ The websocket server primarily depends on the open source library
 \cite{websocket-server}. This library implements the websocket protocol and
 provides a simple interface for transferring data across the network. The
 library was not without problems, over the course of use we reported and helped
-debug several concurrency issues with the generous help of the maintainer.
-These bug fixes also resulted in large performance gains from the initial
-implementation with reduced network latency. \\
+debug concurrency issues with the generous help of the maintainer.  These bug
+fixes also resulted in large performance gains from the initial implementation
+with reduced network latency. \\
 
 When a client loads the Pinky frontend into their browser, the client sends a
 request to the websocket server to open a connection. When the client wishes to
@@ -106,7 +106,7 @@ support of the Jinja2 \cite{jinja2} templating system. This is vastly easier to
 develop on than maintain than a comparable C++ implementation, and since
 performance is not an issue it is a viable option. \\
 
-The server provides web resources for the client as well as a few pages with
+The server provides web resources for the client as well as pages with
 information about the project.
 
 \subsection{File Ingestion Daemon}
@@ -130,10 +130,10 @@ analyst.
 The spectrogram calculation involves reading portions of the raw EEG data,
 taking the FFT of the data with a sliding window in time and storing the
 results in a matrix for visualization. The way the spectrogram is computed can
-vary based on several parameters, and to simplify the implementation, we store
-all relevant spectrogram parameters in an object, \c{SpecParams}. When a client
-requests a spectrogram for a given region of the brain, this object is created,
-building the parameters from the input \c{mrn}, \c{start\_time} and
+vary based on a number of parameters, and to simplify the implementation, we
+store all relevant spectrogram parameters in an object, \c{SpecParams}. When a
+client requests a spectrogram for a given region of the brain, this object is
+created, building the parameters from the input \c{mrn}, \c{start\_time} and
 \c{end\_time}. \\
 
 The \c{SpecParams} object contains the following parameters, the comments next
@@ -232,9 +232,9 @@ eliminated a memory allocation and data copying before sending over the
 network. \\
 
 Another minor optimization is the use of the \c{static inline} keyword. We use
-this for several helper functions to reduce function call overhead. In
-addition, we always pass Aramdillo objects by reference and not value, avoiding
-a copy on function calls.
+this for helper functions to reduce function call overhead. In addition, we
+always pass Aramdillo objects by reference and not value, avoiding a copy on
+function calls.
 
 \section{Related Work}
 
