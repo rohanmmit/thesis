@@ -44,14 +44,36 @@ is in use. Input files are initially received in the EDF format and must
 subsequently be converted without affecting other clients who are using the
 system.
 
-\subsection{EEG Spectrogram}\label{compute-ch:design-spectrogram}
+\subsection{Spectrogram Calculation}\label{compute-ch:design-spectrogram}
 
-TODO, discussing the algorithms in detail.
+The EEG spectrogram transforms the raw voltage readings from a patient
+screening, converting them into frequency space. Formally, if $x$ is a signal
+of length $N$, we consecutively take windows of $x$ of length $m$ ($m \ll N$),
+creating the matrix $X \in \mathbb{R}^{m \times (N - m + 1)}$ where consecutive
+segments of $x$ are consecutive columns in $X$. Thus, the first column of $X$
+is $[x[0], x[1], \ldots, x[m-1]]^T$, followed by $[x[1], x[2], \ldots,
+x[m]]^T$, and so forth. \\
+
+Following this, the spectrogram of $x$ with a window size $m$ is defined as the
+matrix $\hat{X}$, where the columns of $\hat{X}$ are the Discrete Fourier
+Transform (DFT) of $X$, or $\hat{X} = \bar{F}X$. \\
+
+The spectrogram may vary depending on the windowing function, the window size,
+the overlap between windows and the number of points chosen when performing the
+(DFT). We make these parameters configurable to suite the analysts' need, to
+support different kinds of analysis and also exploration for the optimal
+configuration. The default configuration uses the Hamming windowing function, a
+window size defined as \c{(nsamples - nfft) / (fs * 4)}, and the overlap is
+equal to \c{fs}.  The Hamming window is defined as $w(n) = 0.54 -
+0.46*\cos(\frac{2 \pi n}{N -1})$ for the discrete signal $w[n]$, $0 \leq n \leq
+N -1$. \c{nsamples} is the number of samples in the input signal, \c{nfft =
+  next\_power\_of\_2(fs)}, and \c{fs} is the sampling frequency of the input
+signal.
 
 \section{Implementation}
 
 We implement the compute layer almost entirely in C++ except for the file
-ingestion daemon and webapp server, written in Python. The Python
+ingestion daemon and webapp server, which are written in Python. The Python
 implementations comprise a much smaller part of the compute layer codebase
 since there are a number of libraries available in the community. Although
 there is a cost for using multiple languages within a system, Python seemed the
@@ -117,13 +139,14 @@ to ingest new data files. Taking advantage of the Python Watchdog
 the filesystem for a given folder. Upon receiving a notification, the script
 will convert the file to the necessary format and also precompute the
 spectrogram. To process the file, the script calls the command line programs
-\c{edf\_converter <mrn>}~\ref{storage-ch:implementation-cmd} and
-\c{precompute\_spectrogram <mrn>}~\ref{compute-ch:implementation-cmd}. \\
+\c{edf\_converter <mrn>} (Section~\ref{storage-ch:implementation-cmd}) and
+\c{precompute\_spectrogram <mrn>}
+(Section~\ref{compute-ch:implementation-cmd}). \\
 
 This functionality allows an administrator to dump EDF files onto the
 filesystem of the server and allow an analyst to automatically query them.
 
-\subsection{EEG Spectrogram}\label{compute-ch:implementation-spectrogram}
+\subsection{Spectrogram Calculation}\label{compute-ch:implementation-spectrogram}
 
 The spectrogram calculation involves reading portions of the raw EEG data,
 taking the FFT of the data with a sliding window in time and storing the
@@ -191,22 +214,8 @@ Section~\ref{compute-ch:design-spectrogram}) and \c{NUM\_DIFFS=4} since we
 compute the spectrogram across four different regions of the brain. \\
 
 We implement the FFT algorithm with the FFTW library \cite{fftw} for optimal
-performance and uses a Hanning windowing function between FFT runs. We make use
-of the Armadillio C++ linear algebra library \cite{arma} for simplifying
-vector/matrix calculations.
-
-The Hamming window is defined as follows:
-
-\begin{lstlisting}
-void hamming(int windowLength, float* buf)
-{
-  for (int i = 0; i < windowLength; i++)
-  {
-    buf[i] = 0.54 - (0.46 * cos(2 * M_PI *
-                    (i / ((windowLength - 1) * 1.0))));
-  }
-}
-\end{lstlisting}
+performance. We make use of the Armadillio C++ linear algebra library
+\cite{arma} for simplifying vector/matrix calculations.
 
 \subsection{Command Line Programs}\label{compute-ch:implementation-cmd}
 

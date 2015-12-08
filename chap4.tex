@@ -38,9 +38,12 @@ deserializing the data received from the network.
 \subsection{Rendering}
 
 The client rendering must be able to efficiently render large matrices of
-floating point values, on the order of several million points. Some amount of
-data aggregation is acceptable, for example downsampling, however the  analyst
-must not experience degradation of the overall data quality.
+floating point values, on the order of several million points.  The spectrogram
+visualization is created by taking the intensity $(i, j)$-th entry in the
+spectrogram mapped to a rendered color in the $(i, j)$-th pixel in an image.
+Some amount of data aggregation is acceptable, for example downsampling,
+however the  analyst must not experience degradation of the overall data
+quality. \\
 
 \section{Implementation}
 
