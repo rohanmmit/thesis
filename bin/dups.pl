@@ -26,6 +26,7 @@ while (1) {
     chomp ;
 
     $LineNum ++ ;
+    next if /^%/;
 
     my @words = split (/(\W+)/) ;
 
