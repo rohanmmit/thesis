@@ -34,6 +34,6 @@ if [ "$1" = "" ]; then
   exit
 fi
 
-grep -v '^%' $* | egrep -i -n --color "\\b($weasels)\\b"
+grep -n -v '^%' $* | egrep -i --color "\\b($weasels)\\b"
 
 exit $?

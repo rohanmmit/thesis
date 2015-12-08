@@ -57,7 +57,7 @@ if [ "$1" = "" ]; then
   exit
 fi
 
-grep -v '^%' $* | egrep -n -i --color \
+grep -n -v '^%' $* | egrep -i --color \
   "\\b(am|are|were|being|is|been|was|be)\
 \\b[ ]*(\w+ed|($irregulars))\\b"
 
