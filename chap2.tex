@@ -2,18 +2,17 @@
 
 Pinky stores both raw patient data (EEG readings) and calculated visualizations
 (spectrograms). The raw EEG data is simply a matrix with a column for each
-sensor and a data sample read by the sensor at each row. Similarly, the
-spectrogram, a range of frequencies across time, can also be stored as a
-multidimensional array. Since both raw EEG data and the spectrogram
-visualization can be represented as matrices of float values, the system
-requires an efficient way to store and query such large multidimensional
-arrays.  The storage layer meets this requirement by providing an abstraction
-called the \c{StorageBackend} for storing array based data. The abstraction
-gives read and write access to 2-dimensional matrices of \c{float} values.
-Since efficient querying of the data is required in order to provide the
-interactivity that the system demands, we evaluate different array based
-storage systems and compare the tradeoffs of each against a simple storage
-system that we implemented.
+sensor and a data sample read by the sensor at each row. Similarly, we store
+the spectrogram, a range of frequencies across time, as a multidimensional
+array. Since matrices of floating point values represent both raw EEG data and
+the spectrogram visualization, the system requires an efficient way to store
+and query such large multidimensional arrays. The storage layer meets this
+requirement by providing an abstraction called the \c{StorageBackend} for
+storing array based data. The abstraction gives read and write access to
+2-dimensional matrices of \c{float} values. Since the interactivity the system
+demands requires efficient querying of the data, we evaluate different array
+based storage systems and compare the tradeoffs of each against a simple
+storage system that we implemented.
 
 
 \section{Design}
@@ -30,31 +29,30 @@ maintaining an efficient on disk representation. \\
 
 A \c{StorageBackend} implementation must primarily handle three different
 workloads. The first is data set ingestion. This is a write heavy workload --
-patient data files must be read from disk and stored in the system. Secondly,
+reading patient data files from disk and storing them in the system. Secondly,
 spectrogram data is typically written once in a precomputation step and then
-saved for later analysis. The saved data is served to an analyst to view,
-requiring efficient reads.
+saved for later analysis, requiring efficient reads for an analyst to access.
 
 \subsection{Ingestion Workload}
 
-Once the patient scan is complete, the raw data file can be ingested into the
-system for analysis. The raw data is initially stored in the European Data
-Format (EDF) \cite{edf}, a simple binary format for storing multichannel
-biological and physical signals. During ingestion, the data is read in chunks
-from an input EDF file and converted for storage within the system. This
-workload requires the storage system to efficiently handle the addition of
+Once the patient scan is complete, the system ingests the raw data file for
+analysis. The raw data is initially stored in the European Data Format (EDF)
+\cite{edf}, a simple binary format for storing multichannel biological and
+physical signals. During ingestion, we read the data in chunks of configurable
+size from an input EDF file and converte them for storage within the system.
+This workload requires the storage system to efficiently handle the addition of
 large datasets. We evaluate the performance when ingesting data with the
 implementations in Section~\ref{storage-ch:ingestion-exp}.
 
 
 \subsection{Precomputation Workload}
 
-After a file is ingested into the system, the raw values are read to compute
-the spectrogram for the patient. This precomputation step is important for
-minimizing the latency when serving the visualization. The precomputation
-calculation involves reading columns of the raw data to perform the spectrogram
-calculation and writing the spectrogram matrix back to the datastore. The
-details of the calculation are described in
+After ingesting a file into the system, the spectrogram for a patient is
+computed, reading the raw values from the storage system. This precomputation
+step is important for minimizing the latency when serving the visualization.
+The precomputation calculation involves reading columns of the raw data to
+perform the spectrogram calculation and writing the spectrogram matrix back to
+the datastore. We describe the details of the calculation in
 Section~\ref{compute-ch:design-spectrogram}. This workload requires efficient
 reading of individual columns in the raw data and, similarly to the ingestion
 workload, the ability to write dense matrices efficiently.
@@ -69,7 +67,7 @@ workload requires efficient reading of chunks of the matrix.
 \section{Implementation}
 
 The storage layer is implemented in C++, providing a common interface to access
-array based datasets. A \c{StorageBackend} is created by inheriting from
+array based datasets. We create a \c{StorageBackend} by inheriting from
 \c{AbstractStorageBackend} and implementing the methods described in
 Section~\ref{storage-ch:api}, using an existing storage system. This design
 allows us to interchange storage systems without affecting other layers within
@@ -86,8 +84,8 @@ some overall optimizations in Section~\ref{storage-ch:opt}.
 \subsection{StorageBackend API}\label{storage-ch:api}
 
 The \c{StorageBackend} API allows creating, reading, and writing arrays. Each
-array is accessed by providing a patient's unique medical record number,
-\c{mrn}. The API is as follows:
+array corresponds to a patient's unique medical record number, \c{mrn}. The API
+is as follows:
 
 \begin{lstlisting}
     ArrayMetadata get_array_metadata(string mrn);
@@ -100,11 +98,11 @@ array is accessed by providing a patient's unique medical record number,
     void close_array(string mrn);
 \end{lstlisting}
 
-\subsubsection{\c{ArrayMetadata get\_array\_metadata(string mrn)}}
-Each array has an associated \c{ArrayMetadata} object which describes the size
-of the matrix. Specifically, \c{ArrayMetadata} stores four \c{int} values which
-are used in the spectrogram calculation and are sent to the client to prepare
-the visualization. The values are as follows:
+\subsubsection{\c{ArrayMetadata get\_array\_metadata(string mrn)}} Each array
+has an associated \c{ArrayMetadata} object which describes the size of the
+matrix. Specifically, \c{ArrayMetadata} stores four \c{int} values necessary
+for the spectrogram calculation and the client to prepare the
+visualization. The values are as follows:
 
 \begin{lstlisting}
     int fs;
@@ -133,9 +131,9 @@ discussed further in Section~\ref{storage-ch:opt}.
 \subsubsection{\c{void read\_array(string mrn, int ch, int start\_offset, int end\_offset, float* buf);}}
 \c{read\_array} takes in a channel (column) to read, \c{ch}, and a
 \c{start\_offset} and \c{end\_offset} describing the subset of rows to
-retrieve.  When requesting raw EEG data, a single column is passed in. When
+retrieve. When requesting raw EEG data, a single column is passed in. When
 requesting a spectrogram, a special \c{ch} value \c{ALL} is given since we want
-to retrieve all columns for a given time range. All data values are read into
+to retrieve all columns for a given time range. We write data values into
 the provided buffer \c{buf}.
 
 \subsubsection{\c{void write\_array(string mrn, int ch, int start\_offset, int end\_offset, float* buf);}}
@@ -158,27 +156,25 @@ visualizations are not stored in the EDF format.
 
 \subsection{BinaryBackend}
 
-The \c{BinaryBackend} is inspired by the EDF format representation and is used
-as a baseline against other implementations. This is chosen as the baseline
-since the storage is designed to meet the workload requirements and is not a
-general array storage system. Comparing the performance of other systems to the
-\c{BinaryBackend} allows us to see the overhead a more general purpose system
-would incur.\\
+The \c{BinaryBackend}, inspired by the EDF format, is used as a baseline
+against other implementations. We use this as the baseline since the storage
+design to meets the workload requirements and is not a general array storage
+system. Comparing the performance of other systems to the \c{BinaryBackend}
+allows us to see the overhead a more general purpose system would incur. \\
 
-The on disk representation is kept simple. The first byte of the file contains
-a \c{uint32\_t}, containing the length of the header information, $n$. The
-following $n$ bytes contain a json encoded string with the \c{ArrayMetadata}
-information. Following this, the array is written to disk in column major order
-for efficient read access. Since the dataset is dense and the number of rows is
-known in advance (\c{nsamples}), reading or writing different sections of the
-file can be determined by simple offset calculations.\\
+We use a simple on disk representation for the \c{BinaryBackend}. The first
+byte of the file contains a \c{uint32\_t}, containing the length of the header
+information, $n$. The following $n$ bytes contain a json encoded string with
+the \c{ArrayMetadata} information. Following this, we write the array to disk
+in column-major order for efficient read access. Since the dataset is dense and
+the number of rows is known in advance (\c{nsamples}), simple offset
+calculations determine the location to read or write the file. \\
 
 When performing multiple I/O operations consecutively, for example, writing a
 file out in chunks, this implementation suffers from multiple disk seeks. Each
-time a read or write is performed, the file is opened, we seek to the
-appropriate location and then we close the file after performing the operation.
-To amortize the disk seeks, we can increase the size of the data chunks being
-read or written.
+time we perform a read or write operation, the file is opened, we seek to the
+appropriate location and finally closing the file. To amortize the cost of disk
+seeks, we can increase the size of the data chunks we read or write.
 
 \subsection{HDF5Backend}
 
@@ -188,13 +184,13 @@ meets the requirements for storage for our system. HDF5 is capable of
 supporting diverse datasets at scale, fitting the array based model of our
 EEG data nicely. \\
 
-Integrating HDF5 as a \c{StorageBackend} is straightforward. Using the
-HDF5 C++ bindings, we wrap the library calls to read and write data without API
-methods. HDF5 has it's own metadata storage which we utilize for keeping the
-\c{ArrayMetadata}. One interesting not is in HDF5 you must specify if the array
-will be read or written in chunks so that the system can layout the data in the
-chunk sizes your specify. Our initial implementation left this detail out,
-costing almost 2x performance.
+Integrating HDF5 as a \c{StorageBackend} is straightforward. Using the HDF5 C++
+bindings, we wrap the library calls to read and write data without API methods.
+HDF5 has it's own metadata storage which we utilize for keeping the
+\c{ArrayMetadata}. One interesting note is in HDF5 you must specify if the
+array will read or write the data in chunks, so that the system can layout the
+data in the chunk sizes your specify. Our initial implementation left this
+detail out, costing almost 2x performance.
 
 \subsection{TileDBBackend}
 
@@ -205,11 +201,11 @@ again fitting out model for a storage system. Although our datasets are dense,
 we wanted to investigate the performance of TileDB for dense datasets and see
 if it can compete with a more mature project such as HDF5.\\
 
-TileDB offers a C api in a shared library which we wrap to create the
+TileDB offers a C API in a shared library which we wrap to create the
 \c{TileDBBackend}. At the time of writing the project does not yet support
 metadata so we store the \c{ArrayMetadata} as JSON data in a file. When
-defining the array a flag is set to order the data in column major order as the
-\c{BinaryBackend} does.
+defining the array, a flag sets the order the data in column-major order,
+similar to the \c{BinaryBackend}.
 
 \subsection{Command Line Programs}\label{storage-ch:implementation-cmd}
 
@@ -224,8 +220,8 @@ When designing the \c{AbstractStorageBackend} performance was an important
 factor. Internally we allow child classes to specify a template type \c{T} as
 a cache value and also store a mapping from \c{mrn} to \c{ArrayMetadata}. The
 goal is the allow each implementation to store some basic information in memory
-rather than having to continually fetch from disk. For example, once
-\c{open\_array} is called, we cached objects related to the array for future
+rather than having to continually fetch from disk. For example, by calling 
+\c{open\_array}, we cached objects related to the array for future
 use until a call to \c{close\_array}. This allows us to keep a consistent
 external API and internally manage access to each library efficiently.
 
@@ -237,7 +233,7 @@ TODO
 We evaluate the performance of the different \c{StorageBackend} implementations
 by testing measuring the time taken to perform file ingestions in
 Section~\ref{storage-ch:ingestion-exp} and spectrogram precomputation in
-Section~\ref{storage-ch:precompute-exp}. All of these experiments were run on
+Section~\ref{storage-ch:precompute-exp}. All of these experiments ran on
 the CSAIL OpenStack infrastructure. We used allocated three instances on
 `isolated' hosts, where the virtual machine will run using a hardware thread.
 Each machine had 4 cores available with 8GB of ram and Intel Xeon 2.27GHz
@@ -255,18 +251,21 @@ in the project repository \cite{eeg-toolkit}. The repository contains
 instructions for building the project and running the experiments.
 
 \subsection{Ingestion Experiment}\label{storage-ch:ingestion-exp}
+
 The ingestion experiment takes an EDF file and converts it to the appropriate
 \c{StorageBackend} format. File sizes ranged in powers of 2 from 1GB to 128GB.
 The largest EDF file in the corpus was 150GB, and files commonly range from
 5GB-20GB. This range of file sizes was chosen to match possible inputs to the
 system so we can understand how different implementations scale. In addition to
-varying the file size, we also vary how much data is read/written in chunks
-from the input file. To reduce system memory consumption we varied chunk sizes
-in powers of 2 from 64MB to 128MB.
+varying the file size, we also vary the chunk size read and write with.  To
+reduce system memory consumption we varied chunk sizes in powers of 2 from 64MB
+to 128MB.
 
 \subsection{Precompute Experiment}\label{storage-ch:precompute-exp}
+
 The precomputation experiment calculates the spectrogram for a given medical
 record number. We use the same file sizes as in the ingestion experiment, using
 the ingested data for this calculation of the spectrogram. Similarly to the
 ingestion experiment, we vary the chunk sizes for writing the spectrogram back
 to the \c{StorageBackend}. Chunk sizes range in powers of 2 from 64MB to 128MB.
+
