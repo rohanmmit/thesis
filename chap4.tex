@@ -5,15 +5,15 @@ served by the compute layer. In addition, this module is responsible for
 providing a usable interface for an analyst to work with the datasets.
 Minimizing latency is an important design goal since increased latency can
 dramatically reduce an analyst's efficiency if they must continually wait for
-the interface to respond from their queries. \\
+the interface to respond to queries. \\
 
-We chose to build browser based visualizations since they allow ease of use for
-an analyst, who only has to visit a webpage instead of installing any software
+We chose to build browser based visualizations since simply the use for
+an analyst, who only has to visit a webpage instead of installing software
 aside from the browser itself. Also, the analyst does not require special
 hardware since the server handles the intensive storage and computations.  This
 choice makes the job of visualizing interactively more difficult since the
 browser is much more limited in network bandwidth and rendering capabilities
-compared to a native application. (add sources to back this up, or numbers)
+compared to a native application.
 
 \section{Design}
 
@@ -48,18 +48,19 @@ quality. \\
 \section{Implementation}
 
 We implement the visualization layer primarily using HTML, JavaScript and CSS.
-WebGl performs the client side render to take advantage of the client GPU. We
-performed our tests and evaluation of the implementation with Chrome
-(46.0.2490.86) and Firefox (42.0) on OSX 10.11.1 and Ubuntu 14.04. (get swang's
-version of chrome/FF).
+WebGl performs the rendering to take advantage of the client GPU. We performed
+our tests and evaluation of the implementation with Chrome (47.0.2526.73) and
+Firefox (42.0) on OSX 10.11.1 and Ubuntu 14.04. (get swang's version of
+chrome/FF).
 
 \subsection{Interface}
 
 Figure~\ref{fig:whole-interface} shows the implementation of the interface. The
 interface shows a sample of the patient \c{005} rendered between the second and
-third hour of the scan. These parameters, located in the top bar, enable the
-analyst to scroll to previous or next hour with a single click. The scrolling
-interval defaults to 1 hour, but is configurable in the settings window. \\
+third hour of the scan. These parameters are located in the top bar, in
+addition to controls which enable the analyst to scroll to previous or next
+hour with a single click. The scrolling interval defaults to 1 hour, but is
+configurable in the settings window. \\
 
 \begin{figure}[h]
 \begin{center}
@@ -70,12 +71,12 @@ interval defaults to 1 hour, but is configurable in the settings window. \\
 \end{figure}
 
 Clicking the the small gear on the far right of the interface opens the
-settings page, Figure~\ref{fig:settings} shows the available options. The
-settings page allows an analyst to change the rendering mode, time interval and
-select options for interpolation and the visualization scale. In addition,
+settings page, the available options are shown in Figure~\ref{fig:settings}.
+The settings page allows an analyst to change the rendering mode, time interval
+and select options for interpolation and the visualization scale. In addition,
 there are two keyboard shortcuts which allow an analyst to change the amplitude
 scale or zoom in on the visualization. Figure~\ref{fig:zoomed-region} shows the
-result of a single region when a user zoomed in. \\
+result of a single region when a user has zoomed in. \\
 
 \begin{figure}[h]
 \begin{center}
@@ -117,9 +118,9 @@ has not yet updated to the client's latest query. \\
 \end{figure}
 
 If an analyst enters an invalid \c{mrn}, the interface responds by clearing all
-of the rendered spectrograms and displaying a small error message as shown in
+of the rendered spectrograms and displaying a small error message, shown in
 Figure~\ref{fig:error}. An invalid \c{mrn} is simply one which the
-\c{StorageBackend} does not contain an array for. This could be from a user
+\c{StorageBackend} does not contain an array for. This could be from a user slip
 error or if the system is currently ingesting the array. This user interaction
 is important to avoid analyst confusion when issuing an invalid query. \\
 
@@ -142,8 +143,9 @@ send requests as JSON encoded data and receive binary responses containing the
 computed spectrogram data for a given region.
 
 We make use of the reconnecting-websocket \cite{reconnecting-websocket} library
-to ensure a smooth user experience is the analyst leaves the page long enough
-for the connection to close.
+to ensure a smooth user experience if the analyst does not use the page long
+enough for the connection to close. This library will automatically reopen the
+connection, instead of forcing the analyst to refresh the page altogether.
 
 \subsection{Rendering}
 
@@ -167,6 +169,4 @@ typed arrays to transfer the binary data from the websocket to the GPU.
 JavaScript typed arrays are array-like objects providing access raw binary
 data. JavaScript engines optimize these arrays giving higher performance than
 the traditional JavaScript \c{Array} object.
-
-\section{Related Work}
 

@@ -3,28 +3,30 @@
 \section{Design Challenges}
 
 Working with the EEG data proved to be a challenge in itself. Starting with
-some Matlab processing scripts that work for small datasets, we set to build a
-scalable design. These initial programs would read data from an EDF file,
-perform the spectrogram calculations and render a static image of 1 to 2 hours
-of data. From this, our design separated the workflow into the three layers,
-storage, compute and visualization. Converting the implementations first to
-Python and then to C++ (see Section~\ref{discuss-ch:abandon}) and implementing
-a web based visualization was non-trival since testing the correctness of the
-algorithms required all of the layers in place. Once we completed an initial
-implementation, it was easier to abstract different portions or change parts of
-the calculations for more optimized use. \\
+some Matlab processing scripts that worked for small datasets, we set out to
+build a scalable design. These initial programs would read data from an EDF
+file, perform the spectrogram calculations and render a static image of 1 to 2
+hours of data. From this, our design separated the workflow into the three
+layers, storage, compute and visualization. Converting the implementations
+first to Python and then to C++ (see Section~\ref{discuss-ch:abandon}) and
+implementing a web based visualization was non-trival since testing the
+correctness of the algorithms required all of the layers to be implemented
+correctly. While implementing a layer, we had backwards compatible methods of
+testing serialized Matlab data. Once we completed an initial implementation, it
+was easier to abstract different portions or change parts of the calculations
+for more optimized use. \\
 
 \subsection{Storage Layer}
 
 Creating a useful abstraction for the storage layer was essential for
 evaluating different datastores and maintaining scalability. The performance of
 this layer is likely the most critical for system performance and also the
-hardest to profile and analyse. The difficulty arises from the scale of the
-datasets when bugs arise only for large files during testing, files larger than
-the disk space on development machines. To verify correctness with different
-backends, conversion between the basckend dataformats was crucial. Each backend
-dumps their data in a csv format and imports it into a different store for
-debugging.
+hardest to profile and analyze. The difficulty arises from the scale of the
+datasets. Many bugs appear only for large files during testing, files which are
+larger than the disk space on development machines. To verify correctness with
+different backends, conversion between the basckend dataformats was crucial.
+Each backend can dump a dataset to a csv format to import it into a different
+store for debugging.
 
 \subsection{Compute Layer}
 
@@ -38,25 +40,27 @@ Having an efficient way to extract data from storage, compute on it, and send
 it to the client was essential. By choosing C++ over C we were able to take
 advantage of the Armadillo \cite{arma} library for linear algebra processing
 and an open source websocket library \cite{websocket-server} for sending data
-over the network.
+over the network. By choosing C++ over Python, we were able to achieve
+sane runtimes.
 
 \subsection{Visualization Layer}
 
 When designing the visualization layer, the main challenge we found was working
-with larger datasets in the browser. The network latency for the browser to
+with larger datasets in the browser. The network latency of the browser to
 receive such a dataset can be prohibitive in itself. The main fact we were able
 to take advantage of was that a human would be analyzing the final dataset.
-Analysts can view dramatically downsampled data to make the same conclusion so
-we cap the size of a visualization by the number of pixels in the client's
-screen. This allows us to still give rich representations in our visualizations
-but without adding latency to the analysis.
+Analysts can view dramatically downsampled data to make the same conclusions.
+Because of this, we cap the size of a visualization size by the number of
+pixels in the client's screen. This allows us to still give rich
+representations in our visualizations but without adding latency to the
+analysis.
 
 \section{Abandoned Designs}\label{discuss-ch:abandon}
 
 There were two main directions that the project could have taken that were
 abandoned. Initially we wanted to explore performing the EEG calculations on a
 GPU to reduce the computation overhead. It became clear that I/O was the
-primary bottleneck for analysing the data and since the datasets cannot reside
+primary bottleneck for analyzing the data and since the datasets cannot reside
 in memory, the overhead of transferring data to the GPU for processing would be
 prohibitive. In addition, after implementing an initial implementation in C++,
 the performance results were acceptable and allowed us to focus on the storage
@@ -67,10 +71,11 @@ The benefit of a Python implementation is that it allows rapid development and
 testing and also reduces the time for configure the input system as it is more
 portable. HDF5 provides Python bindings that allow one to access array data,
 however we found that the cost of serialization when sending data over the
-network dominated the cost of the calculation. We believe that when trying to
-serialize the data to send a visualization over the websockets, Python was
-converting the data to an internal type causing a massive slowdown. Rather than
-rewrite a websocket library, changing the language seemed appropriate.
+network dominated the cost of the calculation by several orders of magnitude.
+We believe that when trying to serialize the data to send a visualization over
+the websockets, Python was converting the data to an internal type causing a
+massive slowdown. Rather than rewrite a websocket library, changing the
+language seemed appropriate.
 
 \section{Lessons Learned}
 
@@ -108,19 +113,19 @@ potential designs for future projects.
 Pinky typically deals with the unique patient identifier known as their medical
 record number or \c{mrn}. The identifier is used throughout the system as an
 id, for example an analyst requests data by giving a patient's \c{mrn}.
-Currently the analyst would have to determine the \c{mrn} to use and would then
-able to use Pinky. An extension to the system would be to allow analysts to
-query patient information to determine which cases to analyze. The current ad
-hoc system involves using different storage systems, so this addition would
-expand Pinky to have a polystore architecture. BigDawg \cite{bigdawg} addresses
-systems using polystore architectures. \\
+Currently, the analyst would have to determine the \c{mrn} to use independently
+and would then able to query Pinky. An extension to the system would be to
+allow analysts to query patient information to determine which cases to
+analyze. The current ad hoc system used at MGH involves using different storage
+systems, so this addition would expand Pinky to have a polystore architecture.
+BigDawg \cite{bigdawg} addresses systems using polystore architectures. \\
 
 In order to query patient information Pinky would have to incorporate a
 relational store for basic patient metadata and a free text store to keep
 doctor reports containing results of different examinations or medications. An
 analyst could then query across these stores, ultimately acquiring an \c{mrn}
 to query Pinky's storage layer with. The importance of this lies in the ability
-to select patients with similar characteristics or treatments and analyse their
+to select patients with similar characteristics or treatments and analyze their
 data together.
 
 \subsection{Spectrogram Annotations}\label{discuss-ch:annotations}
@@ -140,26 +145,26 @@ able to see this annotation when browsing the spectrogram.
 
 As the corpus of EEG data grows, marking annotations by hand as described in
 Section~\ref{discuss-ch:annotations} is rather tedious.  A more automated way
-would be to scan try to automatically cut the spectrogram signal into segments,
-characterized by changes in average power using the cumulative sum algorithm
-\cite{cumsum}. A generating a segment, one could cluster these segments and
-present them to an analyst for classification. During the patient scan, the
-majority of the time goes without incident, giving rise to large periods of
-time with no activity. By automatically grouping these sections together, an
-analyst would be able to quickly pinpoint areas of interest and mark them. The
-difficult part of this problem is properly extracting features from the dataset
-for classification. Some schemes using texture analysis for feature extraction
-are recommended in \cite{texture-classification1},
+would be to scan the dataset and try to automatically cut the spectrogram signal
+into segments, characterized by changes in average power using the cumulative
+sum algorithm \cite{cumsum}. After generating the segments, one could cluster these
+segments and present them to an analyst for classification. During the patient
+scan, the majority of the time goes without incident, giving rise to large
+periods of time with inactivity. By automatically clustering these sections
+together, an analyst would be able to quickly pinpoint areas of interest and
+mark them. The difficult part of this problem is properly extracting features
+from the dataset for classification. Some schemes using texture analysis for
+feature extraction are recommended in \cite{texture-classification1},
 \cite{texture-classification2}, and \cite{auto-segment}. \\
 
 \subsection{Distributed Architecture}\label{discuss-ch:dist-arch}
 
 The current architecture allows an analyst to import and view data that can fit
-on a single machine. There are two downsides to this, the data corpus will
-never entirely fit on a single machine causing costly I/O to transfer files in
-for analysis or certain manual steps to modify the infrastructure, for example
-swapping out hard disks. In addition, there is no way to easily share
-information between other analysts for collaboration. \\
+on a single machine's disk. There are two downsides to this, the entire data
+corpus will not fit on a single machine causing costly I/O to
+transfer files in for analysis or certain manual steps to modify the
+infrastructure, for example swapping out hard disks. In addition, there is no
+way to easily share information between other analysts for collaboration. \\
 
 A more general solution would be to host Pinky in a distributed infrastructure
 giving analysts access to patient files across as many machines as necessary.

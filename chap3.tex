@@ -2,18 +2,18 @@
 
 The compute layer is responsible for two important sections of Pinky's
 functionality. First, this layer handles interaction between the storage layer
-by using the \c{StorageBackend} abstraction to read and write dataset and
-visualization layer by performing calculations a client's request and
-transferring data back for rendering. In addition, this layer also contains
-implementations of optimized algorithms for processing EEG data to produce the
-spectrogram visualization.
+by using the \c{StorageBackend} abstraction to read and write datasets.
+Secondly, it interacts with the visualization layer by performing calculations a
+client's request and transferring data back for rendering. In addition, this
+layer also contains implementations of optimized algorithms for processing EEG
+data to calculate the spectrogram.
 
 \section{Design}
 
 Since this layer of the system supports a variety of features, we separate the
 design points for each. As with other layers, minimizing runtime was one of the
-key design goals, in addition to enabling developers to easily modify and add
-new processing algorithms.
+key design goals. Another design point we focused on was enabling developers to
+easily modify and add new processing algorithms.
 
 \subsection{Websocket Server}
 
@@ -31,9 +31,9 @@ communicating with the websocket server, retrieving data for display. This
 server is separate from the websocket server to simplify the implementation
 since the webapp server is not subject to the same performance requirements
 when transferring datasets over the network. The separation of these two
-servers allows for modules to be easily added to the webapp framework using
-existing frameworks (see Section~\ref{compute-ch:implementation-webapp}) such
-as authentication.
+servers allows for future modules to be easily added to the webapp framework
+using existing frameworks (see Section~\ref{compute-ch:implementation-webapp})
+such as authentication.
 
 \subsection{File Ingestion Daemon}
 
@@ -58,17 +58,18 @@ Following this, the spectrogram of $x$ with a window size $m$ is defined as the
 matrix $\hat{X}$, where the columns of $\hat{X}$ are the Discrete Fourier
 Transform (DFT) of $X$, or $\hat{X} = \bar{F}X$. \\
 
-The spectrogram may vary depending on the windowing function, the window size,
+The spectrogram calculation depends on the windowing function, the window size,
 the overlap between windows and the number of points chosen when performing the
-(DFT). We make these parameters configurable to suite the analysts' need, to
-support different kinds of analysis and also exploration for the optimal
+DFT. We make these parameters configurable to suite an analysts' needs;
+supporting different kinds of analysis and also testing for the optimal
 configuration. The default configuration uses the Hamming windowing function, a
-window size defined as \c{(nsamples - nfft) / (fs * 4)}, and the overlap is
-equal to \c{fs}.  The Hamming window is defined as $w(n) = 0.54 -
-0.46*\cos(\frac{2 \pi n}{N -1})$ for the discrete signal $w[n]$, $0 \leq n \leq
-N -1$. \c{nsamples} is the number of samples in the input signal, \c{nfft =
-  next\_power\_of\_2(fs)}, and \c{fs} is the sampling frequency of the input
-signal.
+window size defined as \c{(nsamples - nfft) / (fs * 4)}, and overlap equal to
+\c{fs}. \\
+
+The Hamming window is defined as $w(n) = 0.54 - 0.46*\cos(\frac{2 \pi n}{N
+  -1})$ for a discrete signal $w[n]$, $0 \leq n \leq N -1$. \c{nsamples} is the
+number of samples in the input signal, \c{nfft = next\_power\_of\_2(fs)},
+and \c{fs} is the sampling frequency of the input signal.
 
 \section{Implementation}
 
@@ -76,49 +77,49 @@ We implement the compute layer almost entirely in C++ except for the file
 ingestion daemon and webapp server, which are written in Python. The Python
 implementations comprise a much smaller part of the compute layer codebase
 since there are a number of libraries available in the community. Although
-there is a cost for using multiple languages within a system, Python seemed the
-appropriate choice in this circumstance due to the reduced developer time and
-dependency on mature libraries. C++ was chosen for the other parts of the
-module since the performance gains with a compiled language were necessary. C++
-was chosen over pure C for the available libraries for linear algebra
-processing \cite{arma} and network communication \cite{websocket-server}.
+there is a development and infrastructure overhead for using multiple languages
+within the system, Python seemed the appropriate choice in this circumstance
+due to the reduced developer time and availability of mature libraries. C++ was
+chosen for the other parts of the module since the performance gains with a
+compiled language were necessary. C++ was chosen over pure C because of the
+available libraries for linear algebra processing \cite{arma} and network
+communication \cite{websocket-server}.
 
 \subsection{Websocket Server}\label{compute-ch:implementation-ws-server}
 
 The websocket server primarily depends on the open source library
-\cite{websocket-server}. This library implements the websocket protocol and
-provides a simple interface for transferring data across the network. The
-library was not without problems, over the course of use we reported and helped
-debug concurrency issues with the generous help of the maintainer.  These bug
-fixes also resulted in large performance gains from the initial implementation
-with reduced network latency. \\
+\c{Simple-WebSocket-Server} \cite{websocket-server}. This library implements
+the websocket protocol and provides a simple interface for transferring data
+across the network. The library was not without it's own bugs, over the course
+of developing Pinky we reported and helped debug concurrency issues with the
+generous help of the maintainer.  These bug fixes also resulted in large
+performance gains from the original library implementation because of reduced
+network latency.  \\
 
-When a client loads the Pinky frontend into their browser, the client sends a
-request to the websocket server to open a connection. When the client wishes to
-browse a patient's data, a request is send specifying the patient's \c{mrn},
-the \c{channel} (LL, LP, RL, RP, see
-Section~\ref{compute-ch:implementation-spectrogram}), a \c{start\_time} and
-\c{end\_time} given in hours. \\
+When loading the Pinky frontend into their browser, the client sends a request
+to the websocket server to open a connection. When the client wishes to browse
+a patient's data, a request is sent specifying the patient's \c{mrn}, a
+\c{start\_time} and \c{end\_time} given in hours. \\
 
 The websocket server then requests a spectrogram with the given values either
 computing the spectrogram on the fly or using a precomputed spectrogram
 calculation. The websocket server with potentially downsample the response to
-meet client latency requirements, however, Chapter~\ref{visgoth-ch} details
-this functionality. \\
+meet client latency requirements, the details of this are described in
+Chapter~\ref{visgoth-ch}. \\
 
 To send data back to the client, a JSON encoded header is created, notifying
 the client with the calculation results. The header contains a small amount of
 metadata such as the sampling rate, \c{fs}, calculated \c{start\_time} and
 \c{end\_time} (we validate these values to the bounds of the dataset),
 spectrogram matrix dimensions and the \c{channel} for the calculation.  The
-messaging protocal transfer binary data encoding a header length in a
-\c{uint32\_t} followed by the serialized header information and the matrix
+messaging protocal transfers the binary array data encoding a header length in
+a \c{uint32\_t} followed by the serialized header information and the matrix
 data. All messages are byte aligned to 8 bytes, so we sometimes add a small
 amount of padding for performance reasons. \\
 
 The websocket spawns $n_{processors} - 1$ threads to serve requests with. For
 development and testing we have use the CSAIL OpenStack framework to create
-multicore virtual machines for testing.
+multicore virtual machines of different sizes for testing.
 
 \subsection{Webapp Server}\label{compute-ch:implementation-webapp}
 
@@ -126,7 +127,7 @@ We implement the webapp server using the Python mircoframework Flask
 \cite{flask}. The Flask framework allows simple serving of HTML webpages with
 support of the Jinja2 \cite{jinja2} templating system. This is vastly easier to
 develop on than maintain than a comparable C++ implementation, and since
-performance is not an issue it is a viable option. \\
+performance is not an issue, Python it is a viable option. \\
 
 The server provides web resources for the client as well as pages with
 information about the project.
@@ -144,7 +145,8 @@ spectrogram. To process the file, the script calls the command line programs
 (Section~\ref{compute-ch:implementation-cmd}). \\
 
 This functionality allows an administrator to dump EDF files onto the
-filesystem of the server and allow an analyst to automatically query them.
+filesystem of the server and allow an analyst to automatically query them after
+conversion.
 
 \subsection{Spectrogram Calculation}\label{compute-ch:implementation-spectrogram}
 
@@ -210,12 +212,12 @@ void eeg_spectrogram(SpecParams* spec_params, int ch, fmat& spec_mat)
 The definition of the constants \c{DIFFERENCE\_PAIRS} and \c{NUM\_DIFFS} are
 omitted from the pseudocode for simplicity. The \c{DIFFERENCE\_PAIRS} simply
 defines which channels to take differences to form a region (see
-Section~\ref{compute-ch:design-spectrogram}) and \c{NUM\_DIFFS=4} since we
+Section~\ref{intro-ch:eeg-overview}) and \c{NUM\_DIFFS=4} since we
 compute the spectrogram across four different regions of the brain. \\
 
 We implement the FFT algorithm with the FFTW library \cite{fftw} for optimal
 performance. We make use of the Armadillio C++ linear algebra library
-\cite{arma} for simplifying vector/matrix calculations.
+\cite{arma} for simplifying vector and matrix calculations.
 
 \subsection{Command Line Programs}\label{compute-ch:implementation-cmd}
 
@@ -241,6 +243,4 @@ Another minor optimization is the use of the \c{static inline} keyword. We use
 this for helper functions to reduce function call overhead. In addition, we
 always pass Aramdillo objects by reference and not value, avoiding a copy on
 function calls.
-
-\section{Related Work}
 

@@ -36,6 +36,9 @@
 \usepackage{xcolor}
 \usepackage{graphicx}
 \usepackage{amsfonts}
+\usepackage{cleveref}
+
+\crefrangelabelformat{section}{#3#1#4--#5\crefstripprefix{#1}{#2}#6}
 
 \pagestyle{plain}
 \renewcommand{\c}[1]{\texttt{#1}}
@@ -72,8 +75,6 @@
 \include{chap5}
 \include{chap6}
 \appendix
-\include{appa}
-\include{appb}
 \include{biblio}
 \end{document}
 
