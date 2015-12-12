@@ -257,10 +257,10 @@ Section~\ref{storage-ch:ingestion-exp}) and spectrogram precomputation
 experiments ran on the CSAIL OpenStack infrastructure. We allocated three
 instances on `isolated' hosts, where the virtual machine runs using an actual
 hardware thread. Each machine had 4 cores available with 8GB of ram and Intel
-Xeon 2.27GHz processors. Each machine had 333GB of disk space available for the
-calculations. To reduce variability between experiments, each experiment was
-run a total of 3 times, once on each machine. Between experiment runs, we clear
-the file system cache to reduce variations from caching. \\
+Xeon 2.27GHz processors. Each machine had 330GB of disk space or more available
+for the calculations. To reduce variability between experiments, each
+experiment was run a total of 3 times, once on each machine. Between experiment
+runs, we clear the file system cache to reduce variations from caching. \\
 
 These two use cases were chosen since they are the primary workloads of the
 system and we want to understand how the different implementations perform for
@@ -273,12 +273,36 @@ instructions for building the project and importing a dataset for testing.
 \subsection{Ingestion Experiment}\label{storage-ch:ingestion-exp}
 
 The ingestion experiment takes an EDF file and converts it to the appropriate
-\c{StorageBackend} format. In the MGH corpus the largest EDF file is 150GB
-and files commonly range from 5GB-20GB. Thus, to understand how the different
+\c{StorageBackend} format. In the MGH corpus, the largest EDF file is 150GB and
+files commonly range from 5GB-20GB. Thus, to understand how the different
 implementations would scale, we use files from 1GB to 128GB, varying by powers
 of 2, for the experiment. In addition to varying the file size, we also vary
 the chunk size read and write with. To reduce system memory consumption we
-varied chunk sizes in powers of 2 from 64MB to 128MB.
+varied chunk sizes in powers of 2 from 64MB to 128MB. Experimentally, we found
+that a chunk size of 256MB was optimal across the file sizes, thus we evaluate
+the different backends with this chunk size.
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale=.75]{./img/ingestion-exp.png}
+\caption{Total runtime for different backend implementations in the ingestion
+  experiment.}
+\label{fig:ingestion-exp}
+\end{center}
+\end{figure}
+
+As Figure~\ref{fig:ingestion-exp} shows, the \c{HDF5Backend} and
+\c{BinaryBackend} scale much more efficiently than the \c{TileDBBackend}. Since
+the ingestion experiment is a write heavy workload, the figure shows both the
+overall performance as file size increases and speed of writes in the system.
+The \c{TileDBBackend} scales linearly with the file size, we assume that writes
+in this system are much more expensive than the others. \\
+
+When writing the \c{TileDBBackend}, we optimized writes to TileDB by writing
+the data in sorted order. If the data is unsorted, TileDB will internally sort
+the dataset, thus ensure this overhead wasn't incurred, we write the data in
+sorted order. The only other clues for the large performance gap would be that
+the data ingested is dense and not sparse data which TileDB is optimized for.
 
 \subsection{Precompute Experiment}\label{storage-ch:precompute-exp}
 
@@ -286,5 +310,110 @@ The precomputation experiment calculates the spectrogram for a given \c{mrn} We
 use the same file sizes as in the ingestion experiment, using the ingested data
 for this calculation of the spectrogram. Similarly to the ingestion experiment,
 we vary the chunk sizes for writing the spectrogram back to the
-\c{StorageBackend}. Chunk sizes range in powers of 2 from 64MB to 128MB.
+\c{StorageBackend}. We used the same chunk size as the ingestion experiment,
+256MB. \\
+
+For this experiment, we evaluate the read time, write time, and total time
+across the different \c{StorageBackend} implementations. The read time is
+calculated as the sum of all reads across regions when producing the
+spectrogram. Similarly, the write time is compute as the total time to write
+the calculated spectrogram values across all regions. The total time accounts
+for the read and write times in addition to the FFT calculation for computing
+the spectrogram.
+
+\subsubsection{Read Time}
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale=0.75]{./img/precompute-exp-read-time.png}
+\caption{Total read time for different backend implementations in the
+  precompute experiment.}
+\label{fig:precompute-exp-read-time}
+\end{center}
+\end{figure}
+
+As Figure~\ref{fig:precompute-exp-read-time} shows, both the \c{BinaryBackend}
+and \c{HDF5Backend} have very similar read times, with a near constant value
+across file sizes. The \c{TileDBBackend} on the otherhand has a growing read
+time between processing 32GB and 128GB files. The runtime for the
+\c{TileDBackend} is also an order of magnitude greater than the other systems. \\
+
+One possibility for the large performance gap here could be the way TileDB
+internally reads data from the disk. The \c{BinaryBackend} takes the entire
+memory chunk it reads and interprets it as an array of \c{float} values. Given
+the performance similarity to the \c{HDF5Backend}, we can assume a similar
+computation is done when extracting data from HDF5. TileDB on the otherhand
+reads each cell from memory and converts it to a floating point value. This
+pass over the memory manually converting each time could be one reason for the
+poor read performance.
+
+\subsubsection{Write Time}
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale=0.75]{./img/precompute-exp-write-time.png}
+\caption{Total write time for different backend implementations in the
+  precompute experiment.}
+\label{fig:precompute-exp-write-time}
+\end{center}
+\end{figure}
+
+Similar to Figure~\ref{fig:ingestion-exp},
+Figure~\ref{fig:precompute-exp-write-time} shows that the \c{TileDBBackend}
+scales linearly with the filesize while the HDF5 and Binary implementations can
+write in almost constant time. Since TileDB writes each cell individually, it's
+possible, as with reading, this factor causes very high write times. This
+workload is predominately read heavy however, since for an input file, the
+entire input file is read but the calculated spectrogram which is written is
+much smaller.
+
+\subsubsection{Total Time}
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale=0.75]{./img/precompute-exp-total-time.png}
+\caption{Total runtime for different backend implementations in the precompute
+  experiment.}
+\label{fig:precompute-exp-total-time}
+\end{center}
+\end{figure}
+
+We show the total runtime of the precompute program in
+Figure~\ref{fig:precompute-exp-total-time}. We can see that the total time is
+dominated by reading the data, with a small amount of time for processing the
+FFT across the data windows.
+
+
+\subsection{Storage Overhead}
+
+In this section we discuss the storage overhead for using each
+\c{StorageBackend} type. We define this overhead as any additional disk space
+required aside from the desired size of the file. As
+Table~\ref{table:storage-overhead} shows, TileDB incurs a large overhead. This
+overhead is primarily because of the coordinate values (the $(i,j)$ coordinates
+within the matrix). TileDB does have some bookkeeping structures, however these
+are of constant size for a given array. We allow TileDB to GZIP the coordinate
+values to reduce the overhead, but there is currently not mechanism to remove
+them entirely (since our case involves dense data). \\
+
+The \c{BinaryBackend} has a $0\%$ overhead because each file only has an additional
+80 bytes to store the header information. Similarly, HDF5 has a small overhead,
+for internal data structures describing the array.
+
+\begin{table}[h!]
+\centering
+ \begin{tabular}{|c |c |c |c|}
+  \hline
+  \c{StorageBackend} & Max. Overhead ($\%$) & Avg. Overhead ($\%$) \\
+  \hline
+  \c{BinaryBackend} & $0$ & $0$ \\
+  \hline
+  \c{HDF5Backend} & $2.4$ & $1.5$ \\
+  \hline
+  \c{TileDBBackend} & $38$ & $38$ \\
+  \hline
+\end{tabular}
+\caption{Storage overhead costs for each \c{StorageBackend} type.}
+\label{table:storage-overhead}
+\end{table}
 
