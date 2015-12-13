@@ -24,8 +24,8 @@ this layer is likely the most critical for system performance and also the
 hardest to profile and analyze. The difficulty arises from the scale of the
 datasets. Many bugs appear only for large files during testing, files which are
 larger than the disk space on development machines. To verify correctness with
-different backends, conversion between the basckend dataformats was crucial.
-Each backend can dump a dataset to a csv format to import it into a different
+different backends, conversion between the backend data formats was crucial.
+Each backend can dump a dataset to a CSV format to import it into a different
 store for debugging.
 
 \subsection{Compute Layer}
@@ -50,7 +50,7 @@ with larger datasets in the browser. The network latency of the browser to
 receive such a dataset can be prohibitive in itself. The main fact we were able
 to take advantage of was that a human would be analyzing the final dataset.
 Analysts can view dramatically downsampled data to make the same conclusions.
-Because of this, we cap the size of a visualization size by the number of
+Because of this, we cap the size of a visualization density by the number of
 pixels in the client's screen. This allows us to still give rich
 representations in our visualizations but without adding latency to the
 analysis.
@@ -161,7 +161,7 @@ feature extraction are recommended in \cite{texture-classification1},
 
 The current architecture allows an analyst to import and view data that can fit
 on a single machine's disk. There are two downsides to this, the entire data
-corpus will not fit on a single machine causing costly I/O to
+corpus will not fit on a single machine, causing costly I/O to
 transfer files in for analysis or certain manual steps to modify the
 infrastructure, for example swapping out hard disks. In addition, there is no
 way to easily share information between other analysts for collaboration. \\

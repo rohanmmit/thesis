@@ -7,13 +7,12 @@ Minimizing latency is an important design goal since increased latency can
 dramatically reduce an analyst's efficiency if they must continually wait for
 the interface to respond to queries. \\
 
-We chose to build browser based visualizations since simply the use for
-an analyst, who only has to visit a webpage instead of installing software
-aside from the browser itself. Also, the analyst does not require special
-hardware since the server handles the intensive storage and computations.  This
-choice makes the job of visualizing interactively more difficult since the
-browser is much more limited in network bandwidth and rendering capabilities
-compared to a native application.
+We chose to build browser based visualizations to simplify the use for an
+analyst -- the only software required is the browser itself. Also, the analyst
+does not require special hardware since the server handles the intensive
+storage and computations.  This choice makes the job of visualizing
+interactively more difficult since the browser is much more limited in network
+bandwidth and rendering capabilities compared to a native application.
 
 \section{Design}
 
@@ -32,7 +31,7 @@ inadvertent issuing of queries.
 \subsection{Communication}
 
 Optimizing communication is important to avoid creating a bottleneck that can
-affect latency. The point which is most likely to be a bottle neck is
+affect latency. The point which is most likely to be a bottleneck is
 deserializing the data received from the network.
 
 \subsection{Rendering}
@@ -48,10 +47,7 @@ quality. \\
 \section{Implementation}
 
 We implement the visualization layer primarily using HTML, JavaScript and CSS.
-WebGl performs the rendering to take advantage of the client GPU. We performed
-our tests and evaluation of the implementation with Chrome (47.0.2526.73) and
-Firefox (42.0) on OSX 10.11.1 and Ubuntu 14.04. (get swang's version of
-chrome/FF).
+WebGL performs the rendering to take advantage of the client GPU.
 
 \subsection{Interface}
 
@@ -103,7 +99,7 @@ amplitude viewing range. \\
 \end{center}
 \end{figure}
 
-While loading the interface blurs the spectrograms and presents a loading bar
+While loading, the interface blurs the spectrograms and presents a loading bar
 to the user, as shown in Figure~\ref{fig:loading}. A delay between the
 rendering of each region can cause confusion about the current rendered data.
 Blurring a region and placing a loading bar on it clearly shows the new region
@@ -132,7 +128,7 @@ is important to avoid analyst confusion when issuing an invalid query. \\
 \end{center}
 \end{figure}
 
-The materialize CSS library \cite{materialize} was used to layout the page
+The CSS library Materialize \cite{materialize} was used to layout the page
 structure and keep a consistent style throughout the webapp.
 
 \subsection{Communication}
@@ -143,9 +139,9 @@ send requests as JSON encoded data and receive binary responses containing the
 computed spectrogram data for a given region.
 
 We make use of the reconnecting-websocket \cite{reconnecting-websocket} library
-to ensure a smooth user experience if the analyst does not use the page long
-enough for the connection to close. This library will automatically reopen the
-connection, instead of forcing the analyst to refresh the page altogether.
+to ensure a smooth user experience if the analyst does not use the page and the
+connection to closes. This library will automatically reopen the connection,
+instead of forcing the analyst to refresh the page altogether.
 
 \subsection{Rendering}
 

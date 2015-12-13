@@ -56,7 +56,7 @@ even result in death \cite{eeg-ml}. \\
 One method for detecting the onset of epileptic seizures is the analysis of
 scalp EEG data, a non-invasive measure of the brain's electrical activity.
 Continuous EEG (cEEG) data is typically recorded using 19 silver/silver
-chloride electrodes, affixed to the scalp\cite{ceeg-1}.
+chloride electrodes, affixed to the scalp \cite{ceeg-1}.
 Figure~\ref{fig:electrodes} shows a drawing of the placement of sensors on a
 patient's scalp. \\
 
@@ -74,10 +74,11 @@ EEG recordings, which typically take place over a continuous 24-hour period
 \cite{ceeg-3}.  Unlike traditional epilepsy monitoring units which focus on
 provoking and capturing seizures, the goal of cEEG studies is to rapidly and
 efficiently identify seizures for future prevention. This leads to an increase
-in the number of cEEG recordings for preventative measures, and intensive care
-unit centers become overwhelmed with the analysis of the growing dataset but
-small number of trained individuals. Methods to screen long EEG recordings
-without sacrificing accuracy are necessary to be able to process this data. \\
+in the number of cEEG recordings for preventative measures, as intensive care
+unit centers become overwhelmed with the analysis of the growing dataset
+because of the small number of trained individuals. Methods to screen long EEG
+recordings without sacrificing accuracy are necessary to be able to process
+this data. \\
 
 Typically, EEGs displays show no more than 10-15 seconds of data per screen of
 raw voltage readings and requires an analyst to simultaneously inspection
@@ -123,22 +124,22 @@ architecture of the system.
 
 \subsection{Storage Layer}
 
-The storage layer, discuss in detail in Chapter~\ref{storage-ch}, is
-responsible for storing raw EEG patient data and a copy of the calculated
-spectrogram. This datastore must optimize both reads and writes of array based
-data for multidimensional arrays on the order to tens to hundreds of GB.
+The storage layer, discussed in detail in Chapter~\ref{storage-ch}, is
+responsible for storing raw EEG patient data and the calculated spectrogram.
+This datastore must optimize both reads and writes of array based data for
+multidimensional arrays on the order to tens to hundreds of GB.
 
 \subsection{Compute Layer}
 
-The compute layer, discuss in detail in Chapter~\ref{compute-ch}, is an
+The compute layer, discussed in detail in Chapter~\ref{compute-ch}, is an
 extendible module which handles the algorithms to calculate the spectrogram and
 other EEG related calculations. As we discuss in
 Section~\ref{discuss-ch:future-work}, there are a number of extensions the
 project can take, thus it is important that an interested developer can easily
 add functionality to this layer. In addition, the compute layer contains two
-servers, one to server the array based data, interfacing with the optimized EEG
-algorithms and the storage layer, as well as a lightweight server for the web
-resources of the visualization layer.
+servers. One server interfaces with the optimized EEG algorithms and the
+storage layer to serve array based data. The second server is a lightweight
+server for the web resources of the visualization layer.
 
 \subsection{Visualization Layer}
 
@@ -157,11 +158,11 @@ latency consistent. We discuss Visgoth in detail in Chapter~\ref{visgoth-ch}.
 
 \section{Usage}
 
-The project code base is available publicly on Github \cite{github}
-\url{https://github.com/joshblum/eeg-toolkit} with documentation for installing
+The project code base is available publicly on Github \cite{github} at
+\url{https://github.com/joshblum/eeg-toolkit}, with documentation for installing
 the project for development. In addition, we have created Docker \cite{docker}
 images that can easily be installed for production use. Armed with a dataset, any
-curious doctor should be able to install the images and load the data for
+curious doctor is able to install the images and load the data for
 analysis. The docker images are available for public use here:
 \url{https://hub.docker.com/r/joshblum/eeg-toolkit-webapp} and
 \url{https://hub.docker.com/r/joshblum/eeg-toolkit-toolkit}. The Github project

@@ -30,9 +30,10 @@ A \c{StorageBackend} implementation must primarily handle three different
 workloads. The first is data ingestion. This is a write heavy workload --
 reading patient data files from disk and storing them in the system. Secondly,
 spectrogram data is typically written once in a precomputation step, and saved
-for later analysis. This workload requires both efficient reads of the raw data
-and writes of the visualization data. After being stored, efficient reads are
-required for an analyst to access the visualizations.
+for later analysis. This workload is primarily read heavy, since the computed
+spectrogram is much smaller in size than the raw input file.  After being
+stored, efficient reads are required for an analyst to access the
+visualizations.
 
 \subsection{Ingestion Workload}
 
@@ -40,7 +41,7 @@ Once the patient scan is complete, the system ingests the raw data file for
 analysis. The raw data is initially stored in the European Data Format (EDF)
 \cite{edf}, a simple binary format for storing multichannel biological and
 physical signals. During ingestion, we read the data in chunks of configurable
-size from an input EDF file and converte them for storage within the system.
+size from an input EDF file and convert them for storage within the system.
 This workload requires the storage system to efficiently handle the addition of
 large datasets. We evaluate the performance when ingesting data with the
 implementations in Section~\ref{storage-ch:ingestion-exp}.
@@ -104,22 +105,21 @@ The API is as follows:
 \subsubsection{\c{ArrayMetadata get\_array\_metadata(string mrn)}}
 
 Each array has an associated \c{ArrayMetadata} object which describes the size
-of the matrix. Specifically, \c{ArrayMetadata} stores four \c{int} values which
+of the matrix. Specifically, \c{ArrayMetadata} stores three \c{int} values which
 are necessary for the spectrogram calculation and for the client to prepare the
 visualization. The values are as follows:
 
 \begin{lstlisting}
     int fs;
-    int nsamples;
     int nrows;
     int ncols;
 \end{lstlisting}
 
 \c{fs} is the frequency rate at which the sampling occurred during the EEG
-scan. \c{nsamples} is the size of each row in the matrix and \c{nrows} and
-\c{ncols} represent the number of rows and columns in the matrix respectively.
-Each array based system has a different way of storing metadata values, the
-\c{ArrayMetadata} object provides a common interface to access and deserialize them.
+scan. \c{nrows} and \c{ncols} represent the number of rows and columns in the
+matrix respectively.  Each array based system has a different way of storing
+metadata values, the \c{ArrayMetadata} object provides a common interface to
+access and deserialize them.
 
 \subsubsection{\c{void create\_array(string mrn, ArrayMetadata* metadata);}}
 
@@ -160,7 +160,7 @@ The \c{EDFBackend} is a \textbf{read-only} implementation of the \c{StorageBacke
 interface. This provides easy access for testing other parts of the system and
 conversion between backend types. The backend uses an existing EDF library
 implementation \cite{edflib} to read given EDF files. This backend is not
-included in the valuation since the ingestion cost is zero and the
+included in the evaluation since the ingestion cost is zero and the
 visualizations are not stored in the EDF format.
 
 \subsection{BinaryBackend}\label{storage-ch:implementation-binary}
@@ -169,14 +169,14 @@ The \c{BinaryBackend}, inspired by the EDF format, is used as a baseline
 against other implementations. We use this as the baseline since the format was
 designed to meet the workload requirements and is not a general array storage
 system. Comparing the performance of other systems to the \c{BinaryBackend}
-allows us to see the overhead a more general purpose system would incur. \\
+allows us to see the overhead a more general purpose system incurs. \\
 
 We use a simple on disk representation for the \c{BinaryBackend}. The first
 byte of the file contains a \c{uint32\_t}, containing the length of the header
 information, $n$. The following $n$ bytes contain a JSON encoded string with
 the \c{ArrayMetadata} information. Following this, we write the array to disk
 in column-major order for efficient read access. Since the dataset is dense and
-the number of rows is known in advance (\c{nsamples}), simple offset
+the number of rows are known in advance (\c{nrows}), simple offset
 calculations determine the location to read or write the file. \\
 
 When performing multiple I/O operations consecutively, for example, writing a
@@ -198,19 +198,19 @@ bindings, we wrap the library calls to read and write data without API methods.
 HDF5 has it's own metadata storage which we utilize for keeping the
 \c{ArrayMetadata}. One interesting note is in HDF5 you must specify if the
 array will read or write the data in chunks, so that the system can layout the
-data in the chunk sizes your specify. Our initial implementation left this
-detail out resulting in an almost 2x cost in performance.
+data in the chunk sizes you specify. Our initial implementation left this
+/bin/bash: jj:206: command not found
 
 \subsection{TileDBBackend}\label{storage-ch:implementation-tiledb}
 
-TileDB\cite{tiledb} is an ongoing research project by Intel labs. TileDB
+TileDB \cite{tiledb} is an ongoing research project by Intel labs. TileDB
 specializes in storing sparse arrays, offering scalable and efficient access to
 these datasets. An input dataset can be an arbitrary multidimensional array,
 again fitting out model for a storage system. Although our datasets are dense,
 we wanted to investigate the performance of TileDB for dense datasets and see
 if it can compete with a more mature project such as HDF5.\\
 
-TileDB offers a C API in a shared library which we wrap to create the
+TileDB offers a C API in a shared object library which we wrap to create the
 \c{TileDBBackend}. At the time of writing the project does not yet support
 metadata, so we store the \c{ArrayMetadata} as JSON data in a separate file.
 When defining the array, a flag sets the order the data in column-major order,
@@ -240,9 +240,9 @@ program is used extensively for testing, ingestion, and evaluation.
 \subsection{Optimizations}\label{storage-ch:opt}
 
 When designing the \c{AbstractStorageBackend}, performance was an important
-factor. Internally we allow child classes to specify a template type \c{T} as
+factor. Internally, we allow child classes to specify a template type \c{T} as
 a cache value and also store a mapping from \c{mrn} to \c{ArrayMetadata}. The
-goal is the allow each implementation to store some basic information in memory
+goal is to allow each implementation to store some basic information in memory
 rather than having to continually fetch from disk. For example, by calling 
 \c{open\_array}, we cache objects related to the array for future
 use until a call to \c{close\_array}. This allows us to keep a consistent
@@ -256,8 +256,8 @@ Section~\ref{storage-ch:ingestion-exp}) and spectrogram precomputation
 (described in Section~\ref{storage-ch:precompute-exp}). All of these
 experiments ran on the CSAIL OpenStack infrastructure. We allocated three
 instances on `isolated' hosts, where the virtual machine runs using an actual
-hardware thread. Each machine had 4 cores available with 8GB of ram and Intel
-Xeon 2.27GHz processors. Each machine had 330GB of disk space or more available
+hardware thread. Each machine had 4 cores available with 8GB of RAM and Intel
+Xeon 2.27GHz processors. Each machine had 330GB of disk space available
 for the calculations. To reduce variability between experiments, each
 experiment was run a total of 3 times, once on each machine. Between experiment
 runs, we clear the file system cache to reduce variations from caching. \\
@@ -275,9 +275,9 @@ instructions for building the project and importing a dataset for testing.
 The ingestion experiment takes an EDF file and converts it to the appropriate
 \c{StorageBackend} format. In the MGH corpus, the largest EDF file is 150GB and
 files commonly range from 5GB-20GB. Thus, to understand how the different
-implementations would scale, we use files from 1GB to 128GB, varying by powers
-of 2, for the experiment. In addition to varying the file size, we also vary
-the chunk size read and write with. To reduce system memory consumption we
+implementations would scale, we use files from 1GB to 128GB in size, varying by
+powers of 2, for the experiment. In addition to varying the file size, we also
+vary the chunk size read and write with. To reduce system memory consumption we
 varied chunk sizes in powers of 2 from 64MB to 128MB. Experimentally, we found
 that a chunk size of 256MB was optimal across the file sizes, thus we evaluate
 the different backends with this chunk size.
@@ -295,14 +295,14 @@ As Figure~\ref{fig:ingestion-exp} shows, the \c{HDF5Backend} and
 \c{BinaryBackend} scale much more efficiently than the \c{TileDBBackend}. Since
 the ingestion experiment is a write heavy workload, the figure shows both the
 overall performance as file size increases and speed of writes in the system.
-The \c{TileDBBackend} scales linearly with the file size, we assume that writes
+Since the \c{TileDBBackend} scales linearly with the file size, we assume that writes
 in this system are much more expensive than the others. \\
 
-When writing the \c{TileDBBackend}, we optimized writes to TileDB by writing
-the data in sorted order. If the data is unsorted, TileDB will internally sort
-the dataset, thus ensure this overhead wasn't incurred, we write the data in
-sorted order. The only other clues for the large performance gap would be that
-the data ingested is dense and not sparse data which TileDB is optimized for.
+When writing the \c{TileDBBackend}, we optimized writes by writing the data in
+sorted order. If the data is unsorted, TileDB will internally sort the dataset,
+thus we want to avoid incurring this overhead during writes. The only other
+clues for the large performance gap would be that the data ingested is dense
+and not sparse data, which TileDB is optimized for.
 
 \subsection{Precompute Experiment}\label{storage-ch:precompute-exp}
 
@@ -310,8 +310,8 @@ The precomputation experiment calculates the spectrogram for a given \c{mrn} We
 use the same file sizes as in the ingestion experiment, using the ingested data
 for this calculation of the spectrogram. Similarly to the ingestion experiment,
 we vary the chunk sizes for writing the spectrogram back to the
-\c{StorageBackend}. We used the same chunk size as the ingestion experiment,
-256MB. \\
+\c{StorageBackend}. In the evaluation, we use the same chunk size as the
+ingestion experiment, 256MB. \\
 
 For this experiment, we evaluate the read time, write time, and total time
 across the different \c{StorageBackend} implementations. The read time is
@@ -333,7 +333,7 @@ the spectrogram.
 \end{figure}
 
 As Figure~\ref{fig:precompute-exp-read-time} shows, both the \c{BinaryBackend}
-and \c{HDF5Backend} have very similar read times, with a near constant value
+and \c{HDF5Backend} have similar read times, with a near constant value
 across file sizes. The \c{TileDBBackend} on the otherhand has a growing read
 time between processing 32GB and 128GB files. The runtime for the
 \c{TileDBackend} is also an order of magnitude greater than the other systems. \\
@@ -362,10 +362,11 @@ Similar to Figure~\ref{fig:ingestion-exp},
 Figure~\ref{fig:precompute-exp-write-time} shows that the \c{TileDBBackend}
 scales linearly with the filesize while the HDF5 and Binary implementations can
 write in almost constant time. Since TileDB writes each cell individually, it's
-possible, as with reading, this factor causes very high write times. This
-workload is predominately read heavy however, since for an input file, the
-entire input file is read but the calculated spectrogram which is written is
-much smaller.
+possible, as with reading, this factor causes high write times. \\
+
+The \c{HDF5Backend} outperforms the \c{BinaryBackend} slightly for large
+inputs, it's possible this difference is caused by HDF5 buffering writes as
+the \c{BinaryBackend} does not.
 
 \subsubsection{Total Time}
 
@@ -390,11 +391,11 @@ In this section we discuss the storage overhead for using each
 \c{StorageBackend} type. We define this overhead as any additional disk space
 required aside from the desired size of the file. As
 Table~\ref{table:storage-overhead} shows, TileDB incurs a large overhead. This
-overhead is primarily because of the coordinate values (the $(i,j)$ coordinates
-within the matrix). TileDB does have some bookkeeping structures, however these
-are of constant size for a given array. We allow TileDB to GZIP the coordinate
-values to reduce the overhead, but there is currently not mechanism to remove
-them entirely (since our case involves dense data). \\
+overhead is primarily because of the storing the coordinate values (the $(i,j)$
+coordinates within the matrix). TileDB does have some bookkeeping structures,
+however these are of constant size for a given array. We allow TileDB to GZIP
+the coordinate values to reduce the overhead, but there is currently no
+mechanism to remove them entirely. \\
 
 The \c{BinaryBackend} has a $0\%$ overhead because each file only has an additional
 80 bytes to store the header information. Similarly, HDF5 has a small overhead,

@@ -3,17 +3,17 @@
 The compute layer is responsible for two important sections of Pinky's
 functionality. First, this layer handles interaction between the storage layer
 by using the \c{StorageBackend} abstraction to read and write datasets.
-Secondly, it interacts with the visualization layer by performing calculations a
-client's request and transferring data back for rendering. In addition, this
-layer also contains implementations of optimized algorithms for processing EEG
-data to calculate the spectrogram.
+Secondly, it interacts with the visualization layer by performing calculations
+at a client's request and transferring data back for rendering. In addition,
+this layer also contains implementations of optimized algorithms for processing
+EEG data to calculate the spectrogram.
 
 \section{Design}
 
 Since this layer of the system supports a variety of features, we separate the
 design points for each. As with other layers, minimizing runtime was one of the
 key design goals. Another design point we focused on was enabling developers to
-easily modify and add new processing algorithms.
+easily modify existing or add new processing algorithms.
 
 \subsection{Websocket Server}
 
@@ -61,9 +61,9 @@ Transform (DFT) of $X$, or $\hat{X} = \bar{F}X$. \\
 The spectrogram calculation depends on the windowing function, the window size,
 the overlap between windows and the number of points chosen when performing the
 DFT. We make these parameters configurable to suite an analysts' needs;
-supporting different kinds of analysis and also testing for the optimal
-configuration. The default configuration uses the Hamming windowing function, a
-window size defined as \c{(nsamples - nfft) / (fs * 4)}, and overlap equal to
+supporting different kinds of analysis and also testing for different
+configurations. The default configuration uses the Hamming windowing function,
+a window size defined as \c{(nsamples - nfft) / (fs * 4)}, and overlap equal to
 \c{fs}. \\
 
 The Hamming window is defined as $w(n) = 0.54 - 0.46*\cos(\frac{2 \pi n}{N
@@ -103,7 +103,7 @@ a patient's data, a request is sent specifying the patient's \c{mrn}, a
 
 The websocket server then requests a spectrogram with the given values either
 computing the spectrogram on the fly or using a precomputed spectrogram
-calculation. The websocket server with potentially downsample the response to
+calculation. The websocket server will potentially downsample the response to
 meet client latency requirements, the details of this are described in
 Chapter~\ref{visgoth-ch}. \\
 
@@ -127,7 +127,7 @@ We implement the webapp server using the Python mircoframework Flask
 \cite{flask}. The Flask framework allows simple serving of HTML webpages with
 support of the Jinja2 \cite{jinja2} templating system. This is vastly easier to
 develop on than maintain than a comparable C++ implementation, and since
-performance is not an issue, Python it is a viable option. \\
+performance is not an issue, Python is a viable option. \\
 
 The server provides web resources for the client as well as pages with
 information about the project.
