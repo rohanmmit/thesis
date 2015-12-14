@@ -115,7 +115,9 @@ spectrogram matrix dimensions and the \c{channel} for the calculation.  The
 messaging protocal transfers the binary array data encoding a header length in
 a \c{uint32\_t} followed by the serialized header information and the matrix
 data. All messages are byte aligned to 8 bytes, so we sometimes add a small
-amount of padding for performance reasons. \\
+amount of padding for performance reasons. This is the same binary
+representation as the \c{BinaryBackend} uses. See
+Figure~\ref{fig:binary-bytearray} for details.\\
 
 The websocket spawns $n_{processors} - 1$ threads to serve requests with. For
 development and testing we have use the CSAIL OpenStack framework to create

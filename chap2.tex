@@ -171,14 +171,31 @@ designed to meet the workload requirements and is not a general array storage
 system. Comparing the performance of other systems to the \c{BinaryBackend}
 allows us to see the overhead a more general purpose system incurs. \\
 
-We use a simple on disk representation for the \c{BinaryBackend}. The first
-byte of the file contains a \c{uint32\_t}, containing the length of the header
-information, $n$. The following $n$ bytes contain a JSON encoded string with
-the \c{ArrayMetadata} information. Following this, we write the array to disk
-in column-major order for efficient read access. Since the dataset is dense and
-the number of rows are known in advance (\c{nrows}), simple offset
-calculations determine the location to read or write the file. \\
+We use a simple on disk representation for the \c{BinaryBackend}. As
+Figure~\ref{fig:binary-bytearray} shows, the first byte of the file contains a
+\c{uint32\_t}, containing the length of the header information, $n$. The
+following $n$ bytes contain a JSON encoded string with the \c{ArrayMetadata}
+information. Following this, we write the array to disk in column-major order
+for efficient read access. Since the dataset is dense and the number of rows
+are known in advance (\c{nrows}), simple offset calculations determine the
+location to read or write the file. \\
 
+\begin{figure}[h]
+\begin{center}
+\begin{bytefield}{32}
+\begin{rightwordgroup}{Header}
+  \begin{leftwordgroup}{Header Length}
+  \bitbox{4}{43}
+  \bitbox{28}{\{"fs": 256,}
+  \end{leftwordgroup} \\
+  \wordbox{1}{"ncols": 16, "nrows": 15625000\}}
+\end{rightwordgroup} \\
+\wordbox{5}{Data}
+\end{bytefield}
+\caption{On disk data layout for \c{BinaryBackend}.}
+\label{fig:binary-bytearray}
+\end{center}
+\end{figure}
 When performing multiple I/O operations consecutively, for example, writing a
 file out in chunks, this implementation suffers from multiple disk seeks. Each
 time we perform a read or write operation, the file is opened, we seek to the
