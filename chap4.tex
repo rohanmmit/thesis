@@ -8,9 +8,9 @@ dramatically reduce an analyst's efficiency if they must continually wait for
 the interface to respond to queries. \\
 
 We chose to build browser based visualizations to simplify the use for an
-analyst -- the only software required is the browser itself. Also, the analyst
-does not require special hardware since the server handles the intensive
-storage and computations.  This choice makes the job of visualizing
+analyst -- the only software required is the browser itself. In addition, the
+analyst does not require special hardware since the server handles the
+intensive storage and computations.  This choice makes the job of visualizing
 interactively more difficult since the browser is much more limited in network
 bandwidth and rendering capabilities compared to a native application.
 
@@ -22,7 +22,7 @@ The interface should provide the analyst with the ability to specify a patient
 \c{mrn} to query, a \c{start\_time} and \c{end\_time} and also afford quick
 navigation between time ranges. The workflow that we anticipate is that an
 analyst will load a single patient file and browse subsequent time frames. Upon
-reaching an interesting section, the analyst should be able to zoom in to see
+reaching a section of interest, the analyst should be able to zoom in to see
 further details. The interface should also give the analyst information about
 the visualization, such as interactive axes. The interface should also provide
 user feedback for errors, cleaning data on the client to prevent the
@@ -37,26 +37,26 @@ deserializing the data received from the network.
 \subsection{Rendering}
 
 The client rendering must be able to efficiently render large matrices of
-floating point values, on the order of several million points.  The spectrogram
-visualization is created by taking the intensity $(i, j)$-th entry in the
-spectrogram mapped to a rendered color in the $(i, j)$-th pixel in an image.
-Some amount of data aggregation is acceptable, for example downsampling,
-however the  analyst must not experience degradation of the overall data
-quality. \\
+floating point values, on the order of several million points. The spectrogram
+visualization is created by taking the intensity of the $(i, j)$-th entry in
+the spectrogram and mapping it to a rendered color in the $(i, j)$-th pixel on
+screen. Some amount of data aggregation is acceptable, for example
+downsampling, however the analyst must not experience degradation of the
+overall data quality. \\
 
 \section{Implementation}
 
 We implement the visualization layer primarily using HTML, JavaScript and CSS.
-WebGL performs the rendering to take advantage of the client GPU.
+WebGL performs the rendering to take advantage of a client's GPU.
 
 \subsection{Interface}
 
 Figure~\ref{fig:whole-interface} shows the implementation of the interface. The
-interface shows a sample of the patient \c{005} rendered between the second and
-third hour of the scan. These parameters are located in the top bar, in
-addition to controls which enable the analyst to scroll to previous or next
-hour with a single click. The scrolling interval defaults to 1 hour, but is
-configurable in the settings window. \\
+interface shows a sample of a patient with \c{mrn} `\c{005}' rendered between
+the second and third hour of the scan. These parameters are located in the top
+bar, in addition to controls which enable the analyst to scroll to previous or
+next hour with a single click. The scrolling interval defaults to 1 hour, but
+is configurable in the settings window. \\
 
 \begin{figure}[h]
 \begin{center}
@@ -140,15 +140,15 @@ computed spectrogram data for a given region.
 
 We make use of the reconnecting-websocket \cite{reconnecting-websocket} library
 to ensure a smooth user experience if the analyst does not use the page and the
-connection to closes. This library will automatically reopen the connection,
+connection to closes. This library automatically reopens the connection,
 instead of forcing the analyst to refresh the page altogether.
 
 \subsection{Rendering}
 
-WebGL is JavaScript API which can render interactive 2D or 3D computer graphics
-without the use of any third party plugins. The initial implementation used the
-open-source library WebGL-Spectrogram \cite{webgl-spectrogram}. This library
-has the functionality to render the spectrogram of an audio file from a
+WebGL is a JavaScript API which can render interactive 2D or 3D computer
+graphics without the use of any third party plugins. The initial implementation
+used the open-source library WebGL-Spectrogram \cite{webgl-spectrogram}. This
+library has the functionality to render the spectrogram of an audio file using a
 lightweight Python websocket server. We modified this library to a more general
 version to contain multiple canvases, one for each brain region, and to
 communicate with the compute layer websocket server. \\

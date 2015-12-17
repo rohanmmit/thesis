@@ -8,20 +8,20 @@
 
 A number of applications require a domain expert to visually inspect and
 process a stream of incoming data. The problem with such manual inspection is
-it's inability to scale as datasets grow exponentially \cite{exp-growth}. As
-the data set grows, it becomes difficult to visualize and interact with
+the inability to scale as datasets grow exponentially \cite{exp-growth}. As the
+dataset grows, it becomes difficult to visualize and interact with
 \cite{immens} and there are also cases of false positives which the expert
 should not have to manually reclassify. We wish to focus on the field of
-medical data, where doctors have to analyze a patient's data and extract relevant
-information for treatment. Specifically, we focus on electroencephalogram (EEG)
-readings, a test which used to detect abnormalities related to the electrical
-activity of the brain. \\
+medical data, where doctors have to analyze a patient's data and extract
+relevant information for treatment. Specifically, we focus on
+electroencephalogram (EEG) readings, a test which used to detect abnormalities
+related to the electrical activity of the brain. \\
 
 Today, doctors are faced with having to store large amounts of patient data
-without analyzing it since they lack the tools to efficiently view datasets at a
-large scale. To address this issue, we have designed and implemented a system,
-Pinky, which can process large amounts of EEG data, allowing near real-time
-interaction for analysis.
+without being able to analyze it since they lack the tools to efficiently view
+datasets at scale. To address this issue, we have designed and implemented
+Pinky, a system for processing large amounts of EEG data, allowing near
+real-time interactive analysis.
 
 
 \section{Pinky}
@@ -33,8 +33,8 @@ system to handle the fast growing corpus of collected EEG data. This end-to-end
 system handles the storage, computation, and visualization of EEG data. The
 goal of the system is to provide a scalable architecture for concurrent
 analysis of patient records with near real-time interactivity. Each layer of
-the system is optimized for use and evaluated across hundreds of GB of patient
-data. \\
+the system is optimized for use and evaluated across hundreds of gigabytes of
+patient data. \\
 
 \begin{figure}[h]
 \begin{center}
@@ -48,10 +48,10 @@ data. \\
 
 A seizure is a transient aberration in the brain's electrical activity. People
 with the central nervous system disorder epilepsy suffer from recurrent
-seizures, often happening suddenly at unpredictable times. A seizure can vary
-from a lapse of attention to a whole-body convulsion. Frequent seizures are
-dangerous, as they can increase risk of sustaining physical injuries and can
-even result in death \cite{eeg-ml}. \\
+seizures, often happening suddenly and at unpredictable times. A seizure can
+vary from a lapse of attention to a whole-body convulsion. Frequent seizures
+are dangerous, as they can increase risk of sustaining physical injuries and
+can even result in death \cite{eeg-ml}. \\
 
 One method for detecting the onset of epileptic seizures is the analysis of
 scalp EEG data, a non-invasive measure of the brain's electrical activity.
@@ -63,7 +63,7 @@ patient's scalp. \\
 \begin{figure}[h]
 \begin{center}
 \includegraphics[scale=0.5]{./img/electrodes.png}
-\caption{Electrode placement on a patient's scalp.}
+\caption{EEG electrode placement on a patient's scalp.}
 \label{fig:electrodes}
 \end{center}
 \end{figure}
@@ -74,21 +74,21 @@ EEG recordings, which typically take place over a continuous 24-hour period
 \cite{ceeg-3}.  Unlike traditional epilepsy monitoring units which focus on
 provoking and capturing seizures, the goal of cEEG studies is to rapidly and
 efficiently identify seizures for future prevention. This leads to an increase
-in the number of cEEG recordings for preventative measures, as intensive care
-unit centers become overwhelmed with the analysis of the growing dataset
-because of the small number of trained individuals. Methods to screen long EEG
-recordings without sacrificing accuracy are necessary to be able to process
-this data. \\
+in the number of cEEG recordings for preventative measures. Intensive care unit
+centers are subsequently overwhelmed with the analysis of the growing dataset
+due to the small number of available trained individuals. Methods to screen
+long EEG recordings without sacrificing accuracy are necessary to be able to
+process this data. \\
 
-Typically, EEGs displays show no more than 10-15 seconds of data per screen of
-raw voltage readings and requires an analyst to simultaneously inspection
+Typically, EEGs displays show no more than 10 to 15 seconds of data per screen
+of raw voltage readings and requires an analyst to simultaneously inspection
 multiple channels. On the contrary, a compressed spectral array \cite{csa} or
 spectrogram display may show 2 to 8 hours of data on a single color map
 \cite{ceeg-3}. This allows analysts to quickly screen long periods of EEG data,
 determining which segments, if any, require direct review of the raw data.
 Spectrogram review reduces cEEG review time by $78\%$ \cite{ceeg-2}, with
 minimal loss of sensitivity compared with conventional review. For these
-reasons we focus on building a tool to rapidly analyze spectrogram data. \\
+reasons, we focus on building a tool to rapidly analyze spectrogram data. \\
 
 Spectrograms are the most widely used compressed data format for EEG data
 \cite{ceeg-1}. A spectrogram consists of three-dimensional plots with time on
@@ -104,8 +104,8 @@ P3-O1), right lateral power, \c{RL}, (Fp2-F8, F8-T4, T4-T6, T6-O2), right
 parasagittal power, \c{RP}, (Fp1-F4, F3-C4, C4-P4, P4-O2).  \\
 
 As the corpus of data collected at the ICU continues to grow, efficient
-mechanisms to store and visualize this data efficiently is key for analysts to
-quickly view patient screenings. Pinky aims to provide this for analysts,
+mechanisms to store and visualize this data at scale is key for analysts to
+quickly view patient screenings. Pinky aims to provide this for analysts by
 giving them a simple yet powerful interface to quickly view spectrogram data.
 
 \section{System Architecture}
@@ -127,7 +127,7 @@ architecture of the system.
 The storage layer, discussed in detail in Chapter~\ref{storage-ch}, is
 responsible for storing raw EEG patient data and the calculated spectrogram.
 This datastore must optimize both reads and writes of array based data for
-multidimensional arrays on the order to tens to hundreds of GB.
+multidimensional arrays on the order to tens to hundreds of gigabytes.
 
 \subsection{Compute Layer}
 
@@ -154,16 +154,17 @@ Since enabling interactivity is an important design criteria, we have designed
 and built an optimization module for browser based visualizations named
 Visgoth. The system uses profiling information from the client and server to
 suggest an adaptive scaling of the visualizations served in order to keep
-latency consistent. We discuss Visgoth in detail in Chapter~\ref{visgoth-ch}.
+latency consistent, regardless of a client's hardware or network bandwidth. We
+discuss Visgoth in detail in Chapter~\ref{visgoth-ch}.
 
 \section{Usage}
 
 The project code base is available publicly on Github \cite{github} at
-\url{https://github.com/joshblum/eeg-toolkit}, with documentation for installing
-the project for development. In addition, we have created Docker \cite{docker}
-images that can easily be installed for production use. Armed with a dataset, any
-curious doctor is able to install the images and load the data for
-analysis. The docker images are available for public use here:
+\url{https://github.com/joshblum/eeg-toolkit}, with documentation for
+installing the project for development. In addition, we have created Docker
+\cite{docker} images that can easily be installed for production use. Armed
+with a dataset, any curious doctor is able to install the images and load the
+data for analysis. The docker images are available for public use on DockerHub:
 \url{https://hub.docker.com/r/joshblum/eeg-toolkit-webapp} and
 \url{https://hub.docker.com/r/joshblum/eeg-toolkit-toolkit}. The Github project
 contains specific installation instructions.
@@ -176,9 +177,9 @@ Pinky makes the following contributions:
 
   \item Implements an abstraction for array based storage systems.
 
-  \item Implements 4 different backends which adhere to the abstraction.
+  \item Implements three different backends which adhere to the abstraction.
 
-  \item Evaluates the different backends for multiple input ranges and
+  \item Evaluates the different backends for varying input ranges and
     workloads.
 
   \item Implements optimized algorithms for analyzing EEG data.

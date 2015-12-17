@@ -4,16 +4,16 @@ The compute layer is responsible for two important sections of Pinky's
 functionality. First, this layer handles interaction between the storage layer
 by using the \c{StorageBackend} abstraction to read and write datasets.
 Secondly, it interacts with the visualization layer by performing calculations
-at a client's request and transferring data back for rendering. In addition,
+at the client's request and transferring data back for rendering. In addition,
 this layer also contains implementations of optimized algorithms for processing
 EEG data to calculate the spectrogram.
 
 \section{Design}
 
 Since this layer of the system supports a variety of features, we separate the
-design points for each. As with other layers, minimizing runtime was one of the
-key design goals. Another design point we focused on was enabling developers to
-easily modify existing or add new processing algorithms.
+design points for each. Similar to the storage layer, minimizing runtime was
+one of the key design goals. Another design point we focused on was enabling
+developers to easily modify existing or add new processing algorithms.
 
 \subsection{Websocket Server}
 
@@ -27,7 +27,7 @@ requests, processing the requests in parallel to reduce latency.
 
 The webapp server is responsible for serving web resources such as JavaScript,
 HTML, and CSS to the client. The scripts sent to the client are responsible for
-communicating with the websocket server, retrieving data for display. This
+communicating with the websocket server to retrieve data for display. This
 server is separate from the websocket server to simplify the implementation
 since the webapp server is not subject to the same performance requirements
 when transferring datasets over the network. The separation of these two
@@ -76,7 +76,7 @@ and \c{fs} is the sampling frequency of the input signal.
 We implement the compute layer almost entirely in C++ except for the file
 ingestion daemon and webapp server, which are written in Python. The Python
 implementations comprise a much smaller part of the compute layer codebase
-since there are a number of libraries available in the community. Although
+since there are a number of open source libraries that we make use of. Although
 there is a development and infrastructure overhead for using multiple languages
 within the system, Python seemed the appropriate choice in this circumstance
 due to the reduced developer time and availability of mature libraries. C++ was
@@ -92,9 +92,9 @@ The websocket server primarily depends on the open source library
 the websocket protocol and provides a simple interface for transferring data
 across the network. The library was not without it's own bugs, over the course
 of developing Pinky we reported and helped debug concurrency issues with the
-generous help of the maintainer.  These bug fixes also resulted in large
-performance gains from the original library implementation because of reduced
-network latency.  \\
+generous help of the project's maintainer. These bug fixes also resulted in
+large performance gains from the original library implementation because of
+reduced network latency. \\
 
 When loading the Pinky frontend into their browser, the client sends a request
 to the websocket server to open a connection. When the client wishes to browse
@@ -111,12 +111,12 @@ To send data back to the client, a JSON encoded header is created, notifying
 the client with the calculation results. The header contains a small amount of
 metadata such as the sampling rate, \c{fs}, calculated \c{start\_time} and
 \c{end\_time} (we validate these values to the bounds of the dataset),
-spectrogram matrix dimensions and the \c{channel} for the calculation.  The
-messaging protocal transfers the binary array data encoding a header length in
-a \c{uint32\_t} followed by the serialized header information and the matrix
-data. All messages are byte aligned to 8 bytes, so we sometimes add a small
-amount of padding for performance reasons. This is the same binary
-representation as the \c{BinaryBackend} uses. See
+spectrogram matrix dimensions and the region (\c{LL}, \c{LP}, \c{RL}, or
+\c{RP}) for the calculation.  The messaging protocal transfers the binary array
+data encoding a header length in a \c{uint32\_t} followed by the serialized
+header information and the matrix data. All messages are byte aligned to 8
+bytes, so we sometimes add a small amount of padding for performance reasons.
+This is the same binary representation as the \c{BinaryBackend} uses. See
 Figure~\ref{fig:binary-bytearray} for details.\\
 
 The websocket spawns $n_{processors} - 1$ threads to serve requests with. For
@@ -128,8 +128,8 @@ multicore virtual machines of different sizes for testing.
 We implement the webapp server using the Python mircoframework Flask
 \cite{flask}. The Flask framework allows simple serving of HTML webpages with
 support of the Jinja2 \cite{jinja2} templating system. This is vastly easier to
-develop on than maintain than a comparable C++ implementation, and since
-performance is not an issue, Python is a viable option. \\
+develop and maintain than a comparable C++ implementation. Since performance is
+not an issue, Python is a viable option. \\
 
 The server provides web resources for the client as well as pages with
 information about the project.
@@ -227,7 +227,7 @@ The compute module offers two command line scripts, \c{test} and
 \c{precompute\_spectrogram <mrn>}. The \c{test} script tests the functionality
 to an algorithm or \c{StorageBackend}. The \c{precompute\_spectrogram} program
 will take a \c{mrn} as input and calculate and store the spectrogram for the
-given \c{mrn}.
+given \c{mrn} on disk.
 
 \subsection{Optimizations}
 
@@ -238,7 +238,7 @@ of the differences for a region in parallel, however computing each region in
 parallel (parallelized at the websocket server) was performant enough. Previous
 iterations involved serializing the output of the Armadillio matrix (\c{fmat}),
 however we found that instead we could directly access a pointer of the raw
-buffer memory. This optimization help significantly since it eliminated a
+matrix memory. This optimization help significantly since it eliminated a
 memory allocation and data copying before sending over the network. \\
 
 Another minor optimization is the use of the \c{static inline} keyword. We use

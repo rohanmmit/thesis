@@ -11,10 +11,10 @@ layers, storage, compute and visualization. Converting the implementations
 first to Python and then to C++ (see Section~\ref{discuss-ch:abandon}) and
 implementing a web based visualization was non-trival since testing the
 correctness of the algorithms required all of the layers to be implemented
-correctly. While implementing a layer, we had backwards compatible methods of
-testing serialized Matlab data. Once we completed an initial implementation, it
-was easier to abstract different portions or change parts of the calculations
-for more optimized use. \\
+correctly. While implementing any particular layer, we had to make backwards
+compatible methods of testing serialized Matlab data. Once we completed an
+initial implementation, it was easier to abstract different portions or change
+parts of the calculations for more optimized use. \\
 
 \subsection{Storage Layer}
 
@@ -69,36 +69,35 @@ and visualization systems. \\
 In addition, we had version of the computation algorithms written in Python.
 The benefit of a Python implementation is that it allows rapid development and
 testing and also reduces the time for configure the input system as it is more
-portable. HDF5 provides Python bindings that allow one to access array data,
-however we found that the cost of serialization when sending data over the
-network dominated the cost of the calculation by several orders of magnitude.
-We believe that when trying to serialize the data to send a visualization over
-the websockets, Python was converting the data to an internal type causing a
-massive slowdown. Rather than rewrite a websocket library, changing the
-language seemed appropriate.
+portable. HDF5 provides Python bindings to access array data, however, we found
+that the cost of serialization when sending data over the network dominated the
+cost of the calculation by several orders of magnitude.  We believe that when
+trying to serialize the data to send a visualization over the websockets,
+Python was converting the data to an internal type causing a massive slowdown.
+Rather than rewrite a websocket library, changing the language seemed
+appropriate.
 
 \section{Lessons Learned}
 
 The lessons here are a reflection of the overall project and throughout the
-development process. The first point would be working with the open source
-community. Pinky makes use of the following open source projects \cite{edflib}
+development process. The first point is working with the open source community.
+Pinky makes use of the following open source projects \cite{edflib}
 \cite{dropbox-json} \cite{websocket-server} \cite{tiledb} \cite{happyhttp} in
 each layer (in addition to many other larger community libraries) and without
 these, the project would not have been completed. These projects are often
 maintained by individuals as side projects and can contain bugs or be
 incomplete. Recognizing this fact early on was crucial to be able to contribute
-back to the projects and work with the developers to make the projects better
-by submitting patches and helping them pinpoint bugs. \\
-
+back to the projects and work with the project maintainers to improve the
+projects' by submitting patches and helping pinpoint bugs. \\
 
 Secondly, using the OpenStack infrastructure allowed us to easily allocate new
 machines for testing or experimentation. Initially, it was a struggle to setup
 the project and compile, however taking the time to automate this greatly
 helped to allow collaboration (such as the Visgoth project) and also to quickly
-add machines for demos or experimentation. By realizing that having any easy
-way to setup the infrastructure was necessary, we created Docker \cite{docker}
-images of the project so it can easily be setup and used.  Along with this vein
-the entire project is available on Github \cite{eeg-toolkit} for use in the
+add machines for demos or experimentation. By realizing that having an easy way
+to setup the infrastructure was necessary, we created Docker \cite{docker}
+images of the project so it can easily be setup and used by others. Along with
+this vein the entire project is available on Github \cite{eeg-toolkit} in the
 hopes that other doctors will make use of the software.
 
 \section{Future Work}\label{discuss-ch:future-work}
@@ -134,7 +133,7 @@ bandwidth.\\
 Similarly, fitting the models to a linear basis in this first prototype worked
 well with a single bottleneck. However, in order to learn the regression
 pattern described above, it will be necessary to use more advanced non-linear
-regressor model.\\
+regressor models.\\
 
 Making the regression models dynamic is another possibility for producing
 \emph{latency} values closer to the target. To do this, incoming application
@@ -227,7 +226,7 @@ an array over the network. \\
 
 Given the changes proposed in Section~\ref{discuss-ch:annotations} and
 Section~\ref{discuss-ch:cpd} a distributed data service, similar to the
-DataHub\cite{datahub} would be ideal.  This service would allow hospitals and
+DataHub \cite{datahub} would be ideal. This service would allow hospitals and
 medical research institutions around the world to host patient data for
 collaborative analysis, using the Pinky computation and visualization layers to
 power the analysis.
