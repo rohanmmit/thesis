@@ -1,6 +1,6 @@
 \chapter{Compute Layer}\label{compute-ch}
 
-The compute layer is responsible for two important sections of Pinky's
+The compute layer is responsible for two important parts of Pinky's
 functionality. First, this layer handles interaction between the storage layer
 by using the \c{StorageBackend} abstraction to read and write datasets.
 Secondly, it interacts with the visualization layer by performing calculations
@@ -60,7 +60,7 @@ Transform (DFT) of $X$, or $\hat{X} = \bar{F}X$. \\
 
 The spectrogram calculation depends on the windowing function, the window size,
 the overlap between windows and the number of points chosen when performing the
-DFT. We make these parameters configurable to suite an analysts' needs;
+DFT. We make these parameters configurable to suit an analysts' needs;
 supporting different kinds of analysis and also testing for different
 configurations. The default configuration uses the Hamming windowing function,
 a window size defined as \c{(nsamples - nfft) / (fs * 4)}, and overlap equal to

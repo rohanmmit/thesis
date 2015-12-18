@@ -39,10 +39,10 @@ Section~\ref{discuss-ch:visgoth-future-work}.
 
 \section{Related Work}\label{visgoth-ch:related-work}
 
-As far as we know, no visualization library is able to take advantage of
-information about the client's real-time state, only the more static hardware
-configuration. There has, however, been substantial research on optimizing
-performance of large dataset visualization. \\
+Currently, no visualization library takes advantage of information about the
+client's real-time state, only the more static hardware configuration. There
+has, however, been substantial research on optimizing performance of large
+dataset visualization. \\
 
 Interactive querying of multidimensional dataset visualization was explored by
 the \emph{imMens} project \cite{immens}, a web-based visualization library with
@@ -100,7 +100,7 @@ profiling information (highlighted).\\
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[scale=0.4]{./img/system-request.png}
+\includegraphics[scale=0.5]{./img/system-request.png}
 \caption{Sample request in the Visgoth system.}
 \label{fig:system-request}
 \end{center}
@@ -117,7 +117,7 @@ browser.\\
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[scale=0.4]{./img/system-response.png}
+\includegraphics[scale=0.5]{./img/system-response.png}
 \caption{Sample response in the Visgoth system.}
 \label{fig:system-response}
 \end{center}
@@ -407,15 +407,15 @@ models, including $M_1$, along with the test dataset points.\\
   \end{figure}
 
 The curve for $M_1$ predicts a much higher \emph{latency} for higher bandwidths
-than the other models, while the other models also predict very similar
+than the other models, while the other models also predict similar
 \emph{latency} values. This indicates that at these bandwidths, Visgoth will
 almost always recommend some data reduction. This may not be so useful to an
 application developer, who could just set a default \emph{downsample} factor
 without Visgoth. \\
 
 However, at lower bandwidths, around 500 KB/s, the same bandwidth is predicted
-to produce many different latencies depending on which \emph{downsample} value
-is used. This is where the Visgoth system could have impact on the client's
+to produce different latencies depending on which \emph{downsample} value is
+used. This is where the Visgoth system could have impact on the client's
 experience. Within this range of bandwidths, it is unclear from a developer's
 perspective which default value of \emph{downsample} would always produce the
 target \emph{latency} value, or if there even is one.\\

@@ -7,21 +7,18 @@
 \chapter{Introduction}\label{intro-ch}
 
 A number of applications require a domain expert to visually inspect and
-process a stream of incoming data. The problem with such manual inspection is
-the inability to scale as datasets grow exponentially \cite{exp-growth}. As the
-dataset grows, it becomes difficult to visualize and interact with
-\cite{immens} and there are also cases of false positives which the expert
-should not have to manually reclassify. We wish to focus on the field of
-medical data, where doctors have to analyze a patient's data and extract
-relevant information for treatment. Specifically, we focus on
-electroencephalogram (EEG) readings, a test which used to detect abnormalities
-related to the electrical activity of the brain. \\
+process a stream of incoming data. The problem with manual inspection is the
+inability to scale as datasets grow exponentially \cite{exp-growth}. As the
+dataset grows, it becomes difficult to visualize interactively \cite{immens}.
+In this thesis we focus on medical data, where doctors have to analyze a
+patient's data and extract relevant information for treatment. Specifically, we
+focus on electroencephalogram (EEG) readings, a test which used to detect
+abnormalities related to the electrical activity of the brain. \\
 
-Today, doctors are faced with having to store large amounts of patient data
-without being able to analyze it since they lack the tools to efficiently view
-datasets at scale. To address this issue, we have designed and implemented
-Pinky, a system for processing large amounts of EEG data, allowing near
-real-time interactive analysis.
+Today, doctors store large amounts of patient data that they cannot analyze
+because they lack tools to efficiently view datasets at scale. To address this
+issue, we have designed and implemented Pinky, a system for processing large
+amounts of EEG data, allowing near real-time interactive analysis.
 
 
 \section{Pinky}
@@ -30,7 +27,7 @@ Pinky is a doctor's newest tool for analyzing the brain, see
 Figure~\ref{fig:pinky-and-the-brain}. Working with a team of researchers at
 Massachusetts General Hospital (MGH), we have designed and implemented the
 system to handle the fast growing corpus of collected EEG data. This end-to-end
-system handles the storage, computation, and visualization of EEG data. The
+system handles the storage, processing, and visualization of EEG data. The
 goal of the system is to provide a scalable architecture for concurrent
 analysis of patient records with near real-time interactivity. Each layer of
 the system is optimized for use and evaluated across hundreds of gigabytes of
@@ -68,21 +65,21 @@ patient's scalp. \\
 \end{center}
 \end{figure}
 
-Trained individuals such as attending physicians, epilepsy/neurophysiology
-fellows, or registered EEG technicians (encephalographers) review and screen
+Trained individuals, such as attending physicians, epilepsy/neurophysiology
+fellows, or registered EEG technicians (encephalographers), review and screen
 EEG recordings, which typically take place over a continuous 24-hour period
-\cite{ceeg-3}.  Unlike traditional epilepsy monitoring units which focus on
-provoking and capturing seizures, the goal of cEEG studies is to rapidly and
-efficiently identify seizures for future prevention. This leads to an increase
-in the number of cEEG recordings for preventative measures. Intensive care unit
+\cite{ceeg-3}. Unlike traditional epilepsy monitoring units which focus on
+provoking and capturing seizures, the goal of cEEG studies is to efficiently
+identify future seizures and prevent them. This leads to an increase in the
+number of cEEG recordings for preventative measures. Intensive care unit
 centers are subsequently overwhelmed with the analysis of the growing dataset
 due to the small number of available trained individuals. Methods to screen
 long EEG recordings without sacrificing accuracy are necessary to be able to
 process this data. \\
 
 Typically, EEGs displays show no more than 10 to 15 seconds of data per screen
-of raw voltage readings and requires an analyst to simultaneously inspection
-multiple channels. On the contrary, a compressed spectral array \cite{csa} or
+of raw voltage readings and requires an analyst to simultaneously inspect
+multiple channels. In contrast, a compressed spectral array \cite{csa} or
 spectrogram display may show 2 to 8 hours of data on a single color map
 \cite{ceeg-3}. This allows analysts to quickly screen long periods of EEG data,
 determining which segments, if any, require direct review of the raw data.
@@ -90,27 +87,40 @@ Spectrogram review reduces cEEG review time by $78\%$ \cite{ceeg-2}, with
 minimal loss of sensitivity compared with conventional review. For these
 reasons, we focus on building a tool to rapidly analyze spectrogram data. \\
 
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale=0.35]{./img/eeg-view.png}
+\caption{Spectrogram for one hour window of EEG data.}
+\label{fig:eeg-view}
+\end{center}
+\end{figure}
+
 Spectrograms are the most widely used compressed data format for EEG data
 \cite{ceeg-1}. A spectrogram consists of three-dimensional plots with time on
-the x-axis, frequency on the y-axis, and EEG power on the z-axis. An analyst
-typically views four spectrograms concurrently, mapped to different regions of
-the brain. Each region is formed by using multiple EEG channels where an EEG
-channel is the difference between voltages measured at two electrodes. This
-captures the summed potential of millions of neurons \cite{eeg-ml}.
-Figure~\ref{fig:electrodes} shows the electrode placement on the patient's
-scalp, yielding four regions for analysis: left lateral power, \c{LL}, (Fp1-F7,
-F7-T3, T3-T5, T5-O1), left parasagittal power, \c{LP}, (Fp1-F3, F3-C3, C3-P3,
-P3-O1), right lateral power, \c{RL}, (Fp2-F8, F8-T4, T4-T6, T6-O2), right
-parasagittal power, \c{RP}, (Fp1-F4, F3-C4, C4-P4, P4-O2).  \\
+the x-axis, frequency on the y-axis, and EEG power on the z-axis.
+Figure~\ref{fig:eeg-view} shows an example of rendered spectrogram data. An
+analyst typically views four spectrograms concurrently, mapped to different
+regions of the brain. Each region is formed by using multiple EEG channels
+where an EEG channel is the difference between voltages measured at two
+electrodes. This captures the summed potential of millions of neurons
+\cite{eeg-ml}.  Figure~\ref{fig:electrodes} shows the electrode placement on
+the patient's scalp, yielding four regions for analysis: left lateral power,
+\c{LL}, (Fp1-F7, F7-T3, T3-T5, T5-O1), left parasagittal power, \c{LP},
+(Fp1-F3, F3-C3, C3-P3, P3-O1), right lateral power, \c{RL}, (Fp2-F8, F8-T4,
+T4-T6, T6-O2), right parasagittal power, \c{RP}, (Fp1-F4, F3-C4, C4-P4, P4-O2).
+\\
 
-As the corpus of data collected at the ICU continues to grow, efficient
-mechanisms to store and visualize this data at scale is key for analysts to
-quickly view patient screenings. Pinky aims to provide this for analysts by
-giving them a simple yet powerful interface to quickly view spectrogram data.
+Data from a single patient can vary in size from tens to hundreds of gigabytes
+and the number of EEG tests performed each year is estimated to be between 10
+and 25 million \cite{eeg-scale}. As this corpus of data collected at the ICU
+continues to grow, efficient mechanisms to store and visualize this data at
+scale are key for analysts to quickly view patient screenings. Pinky aims to
+provide this for analysts by giving them a simple yet powerful interface to
+quickly view spectrogram data.
 
 \section{System Architecture}
 
-Pinky is comprised of three coupled layers which handle, storage, computation
+Pinky is comprised of three coupled layers which handle storage, computation
 and visualization. Figure~\ref{fig:system-architecture} shows the overall
 architecture of the system.
 
@@ -127,7 +137,7 @@ architecture of the system.
 The storage layer, discussed in detail in Chapter~\ref{storage-ch}, is
 responsible for storing raw EEG patient data and the calculated spectrogram.
 This datastore must optimize both reads and writes of array based data for
-multidimensional arrays on the order to tens to hundreds of gigabytes.
+multidimensional arrays on the order of tens to hundreds of gigabytes.
 
 \subsection{Compute Layer}
 

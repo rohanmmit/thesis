@@ -22,7 +22,7 @@ Creating a useful abstraction for the storage layer was essential for
 evaluating different datastores and maintaining scalability. The performance of
 this layer is likely the most critical for system performance and also the
 hardest to profile and analyze. The difficulty arises from the scale of the
-datasets. Many bugs appear only for large files during testing, files which are
+datasets. Some bugs appear only for large files during testing, files which are
 larger than the disk space on development machines. To verify correctness with
 different backends, conversion between the backend data formats was crucial.
 Each backend can dump a dataset to a CSV format to import it into a different
@@ -230,4 +230,15 @@ DataHub \cite{datahub} would be ideal. This service would allow hospitals and
 medical research institutions around the world to host patient data for
 collaborative analysis, using the Pinky computation and visualization layers to
 power the analysis.
+
+\section{Conclusion}
+
+Pinky is a system for interactively analyzing EEG data at scale. We have
+evaluated different storage systems to address the need for optimized access to
+large array based datasets, and built an adaptive browser-based visualization
+system, Visgoth, on top of it. The processing layer of Pinky allows efficient
+mediation between the stored data and the data rendered for an analyst. Using
+Pinky, doctors are now able to perform patient analysis more efficiently.
+Future work would allow doctors to collaborate, sharing their insights with
+doctors around the globe.
 
