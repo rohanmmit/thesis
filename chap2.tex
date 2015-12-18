@@ -9,7 +9,7 @@ raw EEG data and the spectrogram visualization, the system requires an
 efficient way to store and query such large multidimensional arrays. The
 storage layer meets this requirement by providing an abstraction called the
 \c{StorageBackend} for storing array based data. The abstraction gives read and
-write access to 2-dimensional matrices of \c{float} values. Since the
+write access to 2-dimensional matrices of floating point values. Since the
 interactivity the system demands requires efficient querying of the data, we
 evaluate different array based storage systems and compare the tradeoffs of
 each against a simple storage system that we implement.
@@ -104,7 +104,7 @@ The API is as follows:
 \subsubsection{\c{ArrayMetadata get\_array\_metadata(string mrn)}}
 
 Each array has an associated \c{ArrayMetadata} object which describes the size
-of the matrix. Specifically, \c{ArrayMetadata} stores three \c{int} values which
+of the matrix. Specifically, \c{ArrayMetadata} stores three integer values which
 are necessary for the spectrogram calculation and for the client to prepare the
 visualization. The values are as follows:
 
@@ -116,15 +116,15 @@ visualization. The values are as follows:
 
 \c{fs} is the frequency rate at which the sampling occurred during the EEG
 scan. \c{nrows} and \c{ncols} represent the number of rows and columns in the
-matrix respectively. Each array based system has a different way of storing
-metadata values, thus the \c{ArrayMetadata} object provides a common interface
-to access and deserialize them.
+matrix respectively. Since each array based system has a different way of
+storing metadata values, the \c{ArrayMetadata} object provides a common
+interface to access and deserialize them.
 
 \subsubsection{\c{void create\_array(string mrn, ArrayMetadata* metadata);}}
 
 The \c{create\_array} function takes a patient's \c{mrn} and a pointer to a
 \c{ArrayMetadata} object as input. The function is responsible for defining the
-array and persisting the \c{ArrayMetadata} to disk.
+array and persisting the \c{ArrayMetadata} object to disk.
 
 \subsubsection{\c{void open\_array(string mrn);}}
 
@@ -139,13 +139,13 @@ discussed further in Section~\ref{storage-ch:opt}.
 retrieve. When requesting raw EEG data, a single column is passed in. When
 requesting a spectrogram, a special channel value \c{ALL} is given since we
 want to retrieve all columns for a given time range. We store data values in
-the provided buffer \c{buf}.
+the provided buffer, \c{buf}.
 
 \subsubsection{\c{void write\_array(string mrn, int ch, int start\_offset, int end\_offset, float* buf);}}
 
 Similar to \c{read\_array}, \c{write\_array} writes the given column \c{ch}
 beginning at \c{start\_offset} and ending at \c{end\_offset} with the values
-written from the buffer \c{buf}.
+written from the buffer, \c{buf}.
 
 \subsubsection{\c{void close\_array(string mrn);}}
 
@@ -164,7 +164,7 @@ visualizations are not stored in the EDF format.
 \subsection{BinaryBackend}\label{storage-ch:implementation-binary}
 
 The \c{BinaryBackend}, inspired by the EDF format, acts as a baseline for other
-implementations. We use this as the baseline since the format was designed to
+implementations. We chose this as the baseline since the format was designed to
 meet the workload requirements and is not a general array storage system.
 Comparing the performance of other systems to the \c{BinaryBackend} allows us
 to see the overhead a more general purpose system incurs. \\
@@ -216,7 +216,7 @@ Integrating HDF5 as a \c{StorageBackend} is straightforward. Using the HDF5 C++
 bindings, we wrap the library calls to read and write data without API methods.
 HDF5 has it's own metadata storage which we utilize for keeping the
 \c{ArrayMetadata}. One interesting note is in HDF5 you must specify if the
-array will read or write the data in chunks, so that the system can layout the
+array will read or write the data in chunks so that the system can layout the
 data in the chunk sizes you specify. Our initial implementation left this
 detail out, resulting in a 2x cost in performance.
 
@@ -225,17 +225,17 @@ detail out, resulting in a 2x cost in performance.
 TileDB \cite{tiledb} is an ongoing research project by Intel Labs. TileDB
 specializes in storing sparse arrays, offering scalable and efficient access to
 these datasets. An input dataset can be an arbitrary multidimensional array,
-again fitting out model for a storage system. Although our datasets are dense,
-we wanted to investigate the performance of TileDB for dense datasets and see
-if it can compete with a more mature project such as HDF5.\\
+fitting out model for a storage system. Although our datasets are dense, we
+wanted to investigate the performance of TileDB for dense datasets and see if
+it can compete with a more mature project such as HDF5.\\
 
 TileDB offers a C API in a shared object library which we use to create the
 \c{TileDBBackend}. At the time of writing the project does not yet support
 metadata, so we store the \c{ArrayMetadata} as JSON data in a separate file. \\
 
 Although TileDB primarily supports sparse array data, it allows reading and
-writing of dense arrays. When defining an array, a special \c{dense} flag may
-be set, allowing the system to make dense array optimizations, similar to HDF5.
+writing of dense arrays. When defining an array, a special \c{dense} flag is
+set, allowing the system to make dense array optimizations, similar to HDF5.
 First, in the dense format, TileDB does not need to store coordinate
 information for each attribute. The array ranges are defined when the array is
 created -- if the data is dense, the coordinate information is implicit. This
@@ -243,27 +243,30 @@ greatly affects performance, since without this flag, each write incurs a 3x
 overhead.  The system must write the \c{float32} attribute and two \c{int32}
 coordinate, $(i,j)$, values. TileDB allows GZIP compression of the coordinates,
 but this leads to a space versus computation tradeoff for compression and
-decompression. \\
+decompression when processing the array. \\
 
 Initially we used the \c{sparse} format with GZIP compression for the
 coordinate values, however the implementation was 2x slower than the \c{dense}
-implementation.
+implementation when performing writes.
 
 \subsection{Command Line Programs}\label{storage-ch:implementation-cmd}
 
-The storage layer offers two command line programs \c{edf\_converter <mrn>} and
-\c{data\_to\_file <mrn> <type>}. The \c{edf\_converter} program takes a \c{mrn}
-as input and converts it to the appropriate \c{StorageBackend} format. The
-\c{data\_to\_file} program is used to serialize data from a \c{StorageBackend}
-to CSV or binary output. These programs are used extensively for testing,
-ingestion, and evaluation.
+The storage layer offers two command line programs \c{edf\_converter <mrn>
+  <desired\_size>} and \c{data\_to\_file <mrn> <type>}. The \c{edf\_converter}
+program takes a \c{mrn} as input and converts it to the appropriate
+\c{StorageBackend} format. There is an optional parameter \c{desired\_size},
+specified in gigabytes. We use this parameter when evaluating the
+implementations -- a small data file can be replicated to produce a testing
+file of arbitrary size. The \c{data\_to\_file} program is used to serialize
+data from a \c{StorageBackend} to CSV or binary output. These programs are used
+extensively for testing, ingestion, and evaluation.
 
 \subsection{Optimizations}\label{storage-ch:opt}
 
 When designing the \c{AbstractStorageBackend}, performance was an important
 factor. Internally, we allow child classes to specify a template type \c{T} as
 a cache value and also store a mapping from \c{mrn} to \c{ArrayMetadata}. Each
-implementation stores some basic information in memory rather than continually
+implementation stores some basic information in memory rather than repeatedly
 fetching information from disk.  For example, by calling \c{open\_array}, we
 cache objects related to the array for future use until a call to
 \c{close\_array}. This allows us to keep a consistent external API and
@@ -300,11 +303,11 @@ files commonly range from 5GB to 20GB. Thus, to understand how the different
 implementations would scale, we use files from 1GB to 128GB in size, varying by
 powers of 2, for the experiment. In addition to varying the file size, we also
 vary the chunk size of the reads and writes. To reduce system memory
-consumption, we varied chunk sizes by powers of 2 from 64MB to 128MB.
+consumption, we varied chunk sizes by powers of 2 from 64MB to 512MB.
 Experimentally, we found that a chunk size of 256MB was optimal across the file
 sizes, thus we evaluate the different backends with this chunk size. \\
 
-This this workload is essentially just a data copy, we use the Linux \c{cp}
+Since this workload is essentially just a data copy, we use the Unix \c{cp}
 program as a reference for the `best' possible performance. Each system must
 convert values from the EDF format to the implementation format, thus any
 overhead from \c{cp} is a result of the conversion, not the disk I/O. \\
@@ -333,9 +336,9 @@ file size, we assume that writes in this system are much more expensive than
 the others. \\
 
 Writes in TileDB are done cell-by-cell, whereas the \c{HDF5Backend} and
-\c{BinaryBackend} can write an entire buffer at once. The cell-by-cell writing
-incurs a large number of calls to \c{memcpy} which may account for the
-performance gap that Figure~\ref{fig:ingestion-exp} shows. \\
+\c{BinaryBackend} implementations can write an entire buffer at once. The
+cell-by-cell writing incurs a large number of calls to \c{memcpy} which may
+account for the performance gap that Figure~\ref{fig:ingestion-exp} shows. \\
 
 Future version of TileDB will support bulk writes, this functionality is
 currently being implemented.
@@ -369,23 +372,22 @@ the FFT calculation for computing the spectrogram. \\
 \end{figure}
 
 As Figure~\ref{fig:precompute-exp-read-time} shows, both the \c{BinaryBackend}
-and \c{HDF5Backend} near identical read times. The \c{TileDBBackend} has a much
-steeper slope, incurring significant overhead.  Compared to
+and \c{HDF5Backend} near identical read times. Compared to
 Figure~\ref{fig:ingestion-exp}, Figure~\ref{fig:precompute-exp-read-time} shows
 that reads in the TileDB system are much more expensive that writes. This is
 likely caused by the system not optimizing for the dense case. In the sparse
-case, coordinate values are generated to yield each nonzero attribute for a
-query. In the dense case, the values need not be generated since each attribute
-must be consecutive, however the system does not yet support this optimization.
-\\
+case, coordinate values are generated on the fly to yield each nonzero
+attribute in a query result. In the dense case, the values need not be
+generated since each attribute must be consecutive. TileDB does not yet support
+this optimization. \\
 
 Another reason for the large performance gap could be the way TileDB internally
-reads data from the disk. The \c{BinaryBackend} takes the entire memory chunk
-it reads and interprets it as an array of \c{float} values. Given the
-performance similarity to the \c{HDF5Backend}, we can assume a similar
-computation is done when extracting data from HDF5. As with writes, TileDB
-reads data cell-by-cell, copying values into a destination buffer, forcing a
-call to \c{memcpy} for each cell that is read.
+reads data from the disk. The \c{BinaryBackend} takes an entire chunk of memory
+and interprets it as an array of \c{float} values. Given the performance
+similarity to the \c{HDF5Backend}, we can assume a similar computation is done
+when extracting data from HDF5. As with writes, TileDB reads data cell-by-cell,
+copying values into a destination buffer, forcing a call to \c{memcpy} for each
+cell that is read.
 
 \subsubsection{Write Time}
 
@@ -399,11 +401,11 @@ call to \c{memcpy} for each cell that is read.
 \end{figure}
 
 Figure~\ref{fig:precompute-exp-write-time} shows that the \c{HDF5Backend}
-outperforms the \c{BinaryBackend} slightly for large inputs. It is possible
-this difference is caused by HDF5 buffering writes which the \c{BinaryBackend}
-does not. Since the write sizes are much smaller than in the ingestion
-experiment, it is likely that the overhead of disk seeks dominates for the
-\c{BinaryBackend} implementation. \\
+outperforms the \c{BinaryBackend} for large inputs. It is possible this
+difference is caused by HDF5 buffering writes which the \c{BinaryBackend} does
+not. Since the write sizes are much smaller than in the ingestion experiment,
+it is likely that the overhead of disk seeks dominates the \c{BinaryBackend}
+implementation. \\
 
 \subsubsection{Total Time}
 
@@ -421,9 +423,6 @@ Figure~\ref{fig:precompute-exp-total-time}. We can see that the total time is
 dominated by reading the data, with a small amount of time for processing the
 FFT across the data windows. \\
 
-The \c{BinaryBackend} and \c{HDF5Backend} implementations perform almost
-identically. For large files, HDF5 performs slightly better.
-
 \subsection{Storage Overhead}
 
 In this section, we discuss the storage overhead for using each
@@ -436,12 +435,13 @@ but this is not a considerable amount of space relative to the data storage. \\
 
 TileDB does not incur a storage overhead since we defined the array to be
 \c{dense}. When an array is \c{sparse}, TileDB has a significant storage
-overhead. This overhead is primarily because of the storing the coordinate
+overhead. Our initial evaluation showed a $38\%$ overhead with GZIP compression
+of the coordinates. This overhead is because of the storing the coordinate
 values (the $(i,j)$ coordinates within the matrix) for each attribute. TileDB
-does have some bookkeeping structures, in both the \c{dense} and \c{sparse}
-cases, however these are of constant size for a given array and also compressed
-using GZIP and as Table~\ref{table:storage-overhead} shows, do not contribute a
-large overhead.
+does have some small bookkeeping structures, in both the \c{dense} and
+\c{sparse} cases, however these are of constant size for a given array and also
+compressed using GZIP. As Table~\ref{table:storage-overhead} shows, these do
+not contribute any overhead. \\
 
 \begin{table}[h!]
 \centering

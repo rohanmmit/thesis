@@ -10,11 +10,11 @@ hours of data. From this, our design separated the workflow into the three
 layers, storage, compute and visualization. Converting the implementations
 first to Python and then to C++ (see Section~\ref{discuss-ch:abandon}) and
 implementing a web based visualization was non-trival since testing the
-correctness of the algorithms required all of the layers to be implemented
-correctly. While implementing any particular layer, we had to make backwards
-compatible methods of testing serialized Matlab data. Once we completed an
-initial implementation, it was easier to abstract different portions or change
-parts of the calculations for more optimized use. \\
+correctness of the algorithms required all layers to be correctly implemented.
+While implementing any particular layer, we had to make backwards compatible
+methods test serialized Matlab data. Once we completed an initial
+implementation, it was easier to abstract different portions or change parts of
+the calculations for more optimized use. \\
 
 \subsection{Storage Layer}
 
@@ -66,14 +66,14 @@ prohibitive. In addition, after implementing an initial implementation in C++,
 the performance results were acceptable and allowed us to focus on the storage
 and visualization systems. \\
 
-In addition, we had version of the computation algorithms written in Python.
+In addition, we had a version of the computation algorithms written in Python.
 The benefit of a Python implementation is that it allows rapid development and
-testing and also reduces the time for configure the input system as it is more
+testing and also reduces the time for configure the system as it is more
 portable. HDF5 provides Python bindings to access array data, however, we found
 that the cost of serialization when sending data over the network dominated the
 cost of the calculation by several orders of magnitude.  We believe that when
-trying to serialize the data to send a visualization over the websockets,
-Python was converting the data to an internal type causing a massive slowdown.
+trying to serialize the data to send a visualization over the network,
+Python converted the data to an internal type causing a massive slowdown.
 Rather than rewrite a websocket library, changing the language seemed
 appropriate.
 
@@ -97,7 +97,7 @@ helped to allow collaboration (such as the Visgoth project) and also to quickly
 add machines for demos or experimentation. By realizing that having an easy way
 to setup the infrastructure was necessary, we created Docker \cite{docker}
 images of the project so it can easily be setup and used by others. Along with
-this vein the entire project is available on Github \cite{eeg-toolkit} in the
+this vein, the entire project is available on Github \cite{eeg-toolkit} in the
 hopes that other doctors will make use of the software.
 
 \section{Future Work}\label{discuss-ch:future-work}
@@ -183,12 +183,12 @@ data together.
 \subsection{Spectrogram Annotations}\label{discuss-ch:annotations}
 
 In addition to viewing the datasets, it would be beneficial for analysts to
-also be able to mark noteworthy sections of the spectrogram. This could be for
-to make a reference for another analyst to see or to cross reference with other
-data, for example the raw EEG signals, to correlate an event with the patient. \\
+also be able to mark noteworthy sections of the spectrogram. This could be to
+make a reference for another analyst to see or to cross reference with other
+data, for example the raw EEG signals. \\
 
 The implementation would involve selecting the frequencies of a spectrogram for
-a given time interval and storing these sections of the matrix.  The analyst
+a given time interval and storing these bounds of the matrix.  The analyst
 would be able to associated a small amount of free text with the annotation,
 such as a note to why the event is interesting. Subsequent viewers would be
 able to see this annotation when browsing the spectrogram.
@@ -212,7 +212,7 @@ feature extraction are recommended in \cite{texture-classification1},
 \subsection{Distributed Architecture}\label{discuss-ch:dist-arch}
 
 The current architecture allows an analyst to import and view data that can fit
-on a single machine's disk. There are two downsides to this, the entire data
+on a single machine. There are two downsides to this, the entire data
 corpus will not fit on a single machine, causing costly I/O to
 transfer files in for analysis or certain manual steps to modify the
 infrastructure, for example swapping out hard disks. In addition, there is no
@@ -229,7 +229,7 @@ Section~\ref{discuss-ch:cpd} a distributed data service, similar to the
 DataHub \cite{datahub} would be ideal. This service would allow hospitals and
 medical research institutions around the world to host patient data for
 collaborative analysis, using the Pinky computation and visualization layers to
-power the analysis.
+power analysis.
 
 \section{Conclusion}
 
@@ -240,5 +240,5 @@ system, Visgoth, on top of it. The processing layer of Pinky allows efficient
 mediation between the stored data and the data rendered for an analyst. Using
 Pinky, doctors are now able to perform patient analysis more efficiently.
 Future work would allow doctors to collaborate, sharing their insights with
-doctors around the globe.
+doctors around the world.
 

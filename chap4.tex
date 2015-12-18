@@ -1,18 +1,19 @@
 \chapter{Visualization Layer}\label{viz-ch}
 
 The primary function of the visualization layer is to render a spectrogram
-served by the compute layer. In addition, this module is responsible for
-providing a usable interface for an analyst to work with the datasets.
-Minimizing latency is an important design goal since increased latency can
-dramatically reduce an analyst's efficiency if they must continually wait for
-the interface to respond to queries. \\
+served by the compute layer. This module is also responsible for providing a
+usable interface for an analyst to work with the datasets.  Minimizing latency
+is an important design goal since increased latency can dramatically reduce an
+analyst's efficiency if they must continually wait for the interface to respond
+to queries. \\
 
 We chose to build browser based visualizations to simplify the use for an
 analyst -- the only software required is the browser itself. In addition, the
 analyst does not require special hardware since the server handles the
-intensive storage and computations.  This choice makes the job of visualizing
-interactively more difficult since the browser is much more limited in network
-bandwidth and rendering capabilities compared to a native application.
+intensive storage and computations. This choice makes the job of visualizing
+interactively more difficult to design and implement since the browser is much
+more limited in network bandwidth and rendering capabilities compared to a
+native application.
 
 \section{Design}
 
@@ -21,11 +22,11 @@ bandwidth and rendering capabilities compared to a native application.
 The interface should provide the analyst with the ability to specify a patient
 \c{mrn} to query, a \c{start\_time} and \c{end\_time} and also afford quick
 navigation between time ranges. The workflow that we anticipate is that an
-analyst will load a single patient file and browse subsequent time frames. Upon
+analyst will load a single patient file and browse subsequent time windows. Upon
 reaching a section of interest, the analyst should be able to zoom in to see
 further details. The interface should also give the analyst information about
 the visualization, such as interactive axes. The interface should also provide
-user feedback for errors, cleaning data on the client to prevent the
+user feedback for errors, validating data on the client to prevent the
 inadvertent issuing of queries.
 
 \subsection{Communication}
@@ -37,7 +38,7 @@ deserializing the data received from the network.
 \subsection{Rendering}
 
 The client rendering must be able to efficiently render large matrices of
-floating point values, on the order of several million points. The spectrogram
+floating point values, on the order of millions of points. The spectrogram
 visualization is created by taking the intensity of the $(i, j)$-th entry in
 the spectrogram and mapping it to a rendered color in the $(i, j)$-th pixel on
 screen. Some amount of data aggregation is acceptable, for example
@@ -47,7 +48,7 @@ overall data quality. \\
 \section{Implementation}
 
 We implement the visualization layer primarily using HTML, JavaScript and CSS.
-WebGL performs the rendering to take advantage of a client's GPU.
+WebGL performs the spectrogram rendering to take advantage of a client's GPU.
 
 \subsection{Interface}
 
@@ -90,8 +91,8 @@ label in the upper left hand corner with \c{LL}, \c{LP}, \c{RP}, or \c{RL}.  As
 Figure~\ref{fig:zoomed-region} shows, next to these labels, is a small box
 containing axis information, specifying where the user's mouse currently is. In
 this box the current timestamp (x-axis) and frequency (y-axis) are show. In
-addition, the box shows the current amplitude value in dB and the current
-amplitude viewing range. \\
+addition, the box shows the current amplitude value in decibels, dB, and the
+current amplitude range. \\
 
 \begin{figure}[h]
 \begin{center}
@@ -162,8 +163,8 @@ communicate with the compute layer websocket server. \\
 \subsection{Optimizations}
 
 WebGL was chosen since it is much more performant than using a browser's canvas
-object or rendering DOM elements directly. Each spectrogram is an array on the
-order of millions of points, we would not be able to achieve the latency
+object or rendering DOM elements directly. Since each spectrogram is an array
+on the order of millions of points, we would not be able to achieve the latency
 required for interactivity without the GPU rendering. Development time suffers
 from the use of WebGL since it is difficult to understand the programming model
 without some background in graphics rendering. In addition, we use JavaScript

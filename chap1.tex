@@ -75,7 +75,7 @@ number of cEEG recordings for preventative measures. Intensive care unit
 centers are subsequently overwhelmed with the analysis of the growing dataset
 due to the small number of available trained individuals. Methods to screen
 long EEG recordings without sacrificing accuracy are necessary to be able to
-process this data. \\
+efficiently process this data. \\
 
 Typically, EEGs displays show no more than 10 to 15 seconds of data per screen
 of raw voltage readings and requires an analyst to simultaneously inspect
@@ -90,7 +90,8 @@ reasons, we focus on building a tool to rapidly analyze spectrogram data. \\
 \begin{figure}[h]
 \begin{center}
 \includegraphics[scale=0.35]{./img/eeg-view.png}
-\caption{Spectrogram for one hour window of EEG data.}
+\caption{Spectrogram for one hour window of EEG data of the \c{LL} region of
+  the brain.}
 \label{fig:eeg-view}
 \end{center}
 \end{figure}
@@ -116,7 +117,7 @@ and 25 million \cite{eeg-scale}. As this corpus of data collected at the ICU
 continues to grow, efficient mechanisms to store and visualize this data at
 scale are key for analysts to quickly view patient screenings. Pinky aims to
 provide this for analysts by giving them a simple yet powerful interface to
-quickly view spectrogram data.
+view spectrogram data.
 
 \section{System Architecture}
 
