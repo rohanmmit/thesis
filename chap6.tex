@@ -9,7 +9,7 @@ file, perform the spectrogram calculations and render a static image of 1 to 2
 hours of data. From this, our design separated the workflow into the three
 layers, storage, compute and visualization. Converting the implementations
 first to Python and then to C++ (see Section~\ref{discuss-ch:abandon}) and
-implementing a web based visualization was non-trival since testing the
+implementing a web based visualization was non-trivial since testing the
 correctness of the algorithms required all layers to be correctly implemented.
 While implementing any particular layer, we had to make backwards compatible
 methods test serialized Matlab data. Once we completed an initial
@@ -35,7 +35,7 @@ medical domain and the algorithms required for different computations. As
 discussed in Section~\ref{discuss-ch:abandon}, the performance of this layer
 can greatly affect the system as a whole since it connects the storage and
 visualizations layers to one another. The most import design decision here was
-the choice of language, a tradeoff between development ease and performance.
+the choice of language, a trade-off between development ease and performance.
 Having an efficient way to extract data from storage, compute on it, and send
 it to the client was essential. By choosing C++ over C we were able to take
 advantage of the Armadillo \cite{arma} library for linear algebra processing
@@ -157,7 +157,7 @@ integrate Visgoth into their own application:
 All other steps, including profile collection and training of the regression
 models, could be automated by the Visgoth system. In this way, Visgoth could
 remove much of the work that would have to be done per application and
-automatically provide a consistent expeirence across any such application's
+automatically provide a consistent experience across any such application's
 clients.
 
 \subsection{Polystore}

@@ -111,7 +111,7 @@ the client with the calculation results. The header contains a small amount of
 metadata such as the sampling rate, \c{fs}, calculated \c{start\_time} and
 \c{end\_time} (we validate these values to the bounds of the dataset),
 spectrogram matrix dimensions and the region (\c{LL}, \c{LP}, \c{RL}, or
-\c{RP}) for the calculation.  The messaging protocal transfers the binary array
+\c{RP}) for the calculation.  The messaging protocol transfers the binary array
 data encoding a header length in a \c{uint32\_t} followed by the serialized
 header information and the matrix data. All messages are byte aligned to 8
 bytes, sometimes a small amount of padding is added for performance reasons.
@@ -217,7 +217,7 @@ and \c{NUM\_DIFFS=4} since we compute the spectrogram across four different
 regions of the brain. \\
 
 We implement the FFT algorithm with the FFTW library \cite{fftw} for optimal
-performance. We make use of the Armadillio C++ linear algebra library
+performance. We make use of the Armadillo C++ linear algebra library
 \cite{arma} for simplifying vector and matrix calculations.
 
 \subsection{Command Line Programs}\label{compute-ch:implementation-cmd}
@@ -243,6 +243,6 @@ network. \\
 
 Another minor optimization is the use of the \c{static inline} keyword. We use
 this for helper functions to reduce function call overhead. In addition, we
-always pass Aramdillo objects by reference and not value, avoiding a copy on
+always pass Armadillo objects by reference and not value, avoiding a copy on
 function calls.
 

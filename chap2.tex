@@ -11,7 +11,7 @@ storage layer meets this requirement by providing an abstraction called the
 \c{StorageBackend} for storing array based data. The abstraction gives read and
 write access to 2-dimensional matrices of floating point values. Since the
 interactivity the system demands requires efficient querying of the data, we
-evaluate different array based storage systems and compare the tradeoffs of
+evaluate different array based storage systems and compare the trade-offs of
 each against a simple storage system that we implement.
 
 \section{Design}
@@ -72,7 +72,7 @@ array based datasets. We create a \c{StorageBackend} by inheriting from the
 \c{AbstractStorageBackend} interface and implementing the methods described in
 Section~\ref{storage-ch:api} using an array storage system. This design allows
 us to interchange storage systems for evaluation without affecting other layers
-within the overall system. To compare the tradeoffs between different array
+within the overall system. To compare the trade-offs between different array
 store systems for each workload, we implement three versions of
 \c{StorageBackend} using two existing systems, HDF5 \cite{hdf5} and TileDB
 \cite{tiledb} and our own implementation as a baseline. \\
@@ -137,9 +137,9 @@ discussed further in Section~\ref{storage-ch:opt}.
 \c{read\_array} takes in a channel (column) to read, \c{ch}, and a
 \c{start\_offset} and \c{end\_offset} describing the subset of rows to
 retrieve. When requesting raw EEG data, a single column is passed in. When
-requesting a spectrogram, a special channel value \c{ALL} is given since we
-want to retrieve all columns for a given time range. We store data values in
-the provided buffer, \c{buf}.
+requesting a spectrogram, we give a special channel value \c{ALL} to retrieve
+all columns for a given time range. We store data values in the provided
+buffer, \c{buf}.
 
 \subsubsection{\c{void write\_array(string mrn, int ch, int start\_offset, int end\_offset, float* buf);}}
 
@@ -242,7 +242,7 @@ created -- if the data is dense, the coordinate information is implicit. This
 greatly affects performance, since without this flag, each write incurs a 3x
 overhead.  The system must write the \c{float32} attribute and two \c{int32}
 coordinate, $(i,j)$, values. TileDB allows GZIP compression of the coordinates,
-but this leads to a space versus computation tradeoff for compression and
+but this leads to a space versus computation trade-off for compression and
 decompression when processing the array. \\
 
 Initially we used the \c{sparse} format with GZIP compression for the
@@ -283,7 +283,7 @@ instances on `isolated' hosts, where the virtual machine runs using an actual
 hardware thread. Each machine had four cores available with 8GB of RAM and
 Intel Xeon 2.27GHz processors running Ubuntu 14.03.04. Each machine had 330GB
 of disk space available for the calculations. To reduce variability between
-experiments, each experiment was run a total of three times, once on each
+experiments, we ran each experiment a total of three times, once on each
 machine. Between experiment runs, we cleared the file system cache to reduce
 variations from caching. \\
 
@@ -335,7 +335,7 @@ of writes in each system.  Since the \c{TileDBBackend} scales linearly with the
 file size, we assume that writes in this system are much more expensive than
 the others. \\
 
-Writes in TileDB are done cell-by-cell, whereas the \c{HDF5Backend} and
+TileDB writes data cell-by-cell, whereas the \c{HDF5Backend} and
 \c{BinaryBackend} implementations can write an entire buffer at once. The
 cell-by-cell writing incurs a large number of calls to \c{memcpy} which may
 account for the performance gap that Figure~\ref{fig:ingestion-exp} shows. \\
