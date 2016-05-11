@@ -76,5 +76,69 @@ we could more intelligently partition the data. As seen in Figure~\ref{fig:shuff
 \end{figure}
 
 \section{Adaptive Scheduling of Joins}\label{intro-ch:eeg-overview}
-The
+
+\subsection{Join Basics}
+
+A common operation in these data processing environments is a join.
+A join basically combines two datasets by finding intersections between
+the keys between the two different datasets. An illustrative example
+is seen below.For instance, we have data in  \ref{table:join1} and corresponding
+data in \ref{table:join2} that we are trying to join based on the intersection
+of key1 and key2. The resulting output is what we will find in \ref{table:join3}   
+We will see a twice as we will see the interesection with other a in table 2,
+b is not present in the output table because is not found in table 2, while 
+c will be present because its output is found in table 3.
+
+\begin{table}[h!]
+\centering
+ \begin{tabular}{|c |c |c |c|}
+  \hline
+   Key1 & Value1 \\
+  \hline
+   a & 1 \\
+  \hline
+   a & 1 \\
+  \hline
+   b & 3 \\
+  \hline
+   c & 4 \\
+  \hline
+\end{tabular}
+\caption{Table for Dataset 1}
+\label{table:join1}
+\end{table}
+
+\begin{table}[h!]
+\centering
+ \begin{tabular}{|c |c|}
+  \hline
+   Key2 & Value2 \\
+  \hline
+   a & 5 \\
+  \hline
+   c & 7 \\
+  \hline
+\end{tabular}
+\caption{Table for dataset 2}
+\label{table:join2}
+\end{table}
+
+\begin{table}[h!]
+\centering
+ \begin{tabular}{|c |c |c|}
+  \hline
+   Key1 & Value1 & Value2  \\
+  \hline
+   a & 1 & 5 \\
+  \hline
+   a & 2 & 5 \\
+  \hline
+   c & 4 & 7 \\
+  \hline
+\end{tabular}
+\caption{Table of Joined Data}
+\label{table:join3}
+\end{table}
+
+
 
