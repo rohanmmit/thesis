@@ -140,5 +140,49 @@ c will be present because its output is found in table 3.
 \label{table:join3}
 \end{table}
 
+\subsection{Shuffle Join}
+The above description describes how a join works in a simple non-distributed case. 
+However, we are dealing with joins in a distributed fashion. Joins are very similar
+to the shuffle but with two sets of partitions that we have to merge. 
+For instance, take a look at the figure \ref{fig:shuffle_join}
+As depicted, basically a shuffle takes places twice, with both datasets sending all their
+corresponding to the same reducer. For instance, for both datasets, all of the keys that 
+mapped to partition 1 was sent to the reducer 1 and this happens respectively for the rest of the partitions.
+
+ \begin{figure}[h]
+\begin{center}
+\includegraphics[scale=1.0]{./img/shuffle_join.png}
+\caption{Typical Shuffle Join.}
+\label{fig:shuffle_join}
+\end{center}
+\end{figure}
+
+\subsection {Broadcast Join}
+ One thing to notice in the diagram is that it seems that mappers and reducers
+are different machines. However, this distinction is imaginary and wholly based to help 
+logic decision. In fact, they do run on the same machines. 
+Because of this not all data it transferred over the network. If reducer 1 corresponds to mapper 1, then it
+actually does not need to send the network of 10MB corresponding to partition 1 already on the mapper.
+
+In certain situations, it might make sense to keep all of dataset1 in place and transmit all of dataset 2 to each
+machine in dataset 1. This method still provides correctness even though dataset 1 stays in place, because all partitions
+of dataset 2 are sent. The advantages are that if dataset 2 is super small and dataset 1 can just stay in place, 
+the network latency can be reduced. The following diagram \ref{fig:broadcast_join} demonstrates how data would be shuffled
+using the broadcat join. Notice how the amount of data being transferred would be in the kiloybytes instead of the megabytes.
+
+Broadcast Join is not always the optimal strategy. Because the entirety of dataset2 is sent to all partitions, the amount of computation
+increases. Additionally, if the datasets are sufficiently the same size, than the amount of data transferred over the network will actually
+increase because dataset 2 is sent in its entirety to every machine. 
+
+Thus, when choosing join strategies it becomes clear that certain strategies are good in certain situations. Thus, it becomes imperative
+to be able to pick the strategy after the mappers have run and we know the sizes of them.
+
+ \begin{figure}[h]
+\begin{center}
+\includegraphics[scale=1.0]{./img/broadcast_join.png}
+\caption{Broadcast Join}
+\label{fig:broadcast_join}
+\end{center}
+\end{figure}
 
 
