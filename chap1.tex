@@ -6,40 +6,45 @@
 %% prompt when you run the file main.tex through LaTeX.
 \chapter{Introduction}\label{intro-ch}
 
-A number of applications require a domain expert to visually inspect and
-process a stream of incoming data. The problem with manual inspection is the
-inability to scale as datasets grow exponentially \cite{exp-growth}. As the
-dataset grows, it becomes difficult to visualize interactively \cite{immens}.
-In this thesis we focus on medical data, where doctors have to analyze a
-patient's data and extract relevant information for treatment. Specifically, we
-focus on electroencephalogram (EEG) readings, a test which used to detect
-abnormalities related to the electrical activity of the brain. \\
-
-Today, doctors store large amounts of patient data that they cannot analyze
-because they lack tools to efficiently view datasets at scale. To address this
-issue, we have designed and implemented Pinky, a system for processing large
-amounts of EEG data, allowing near real-time interactive analysis.
+\section{Distributed Systems}
 
 
-\section{Pinky}
+With the rise of big data, new data processing systems have been designed to help process it. 
+Instead of relying on using just onemore powerful computers, these systems use many computers and are thus distributed in nature due to economic costs,scalability, and fault tolerance. Because programming in these  distributed environments is challenging, data processing systems
+try to abstract this from the user and provide a simple interface for them. One of the most popular systems is Map Reduce,
+invented by Google, which provides a simple map and reduce operation to the user. Another of these systems is Spark, which provides
+a slightly more expressive api then map reduce and also has different modes of fault tolerance than spark along with caching. 
+One key and slow stage that both of these systems have, is that because they are distributed in nature, they have a stage
+where data must be transferred between machines, called the shuffle stage. This shuffle stage can be the bottleneck and be the reason for low performance of jobs.
+\section{Shuffle} 
 
-Pinky is a doctor's newest tool for analyzing the brain, see
-Figure~\ref{fig:pinky-and-the-brain}. Working with a team of researchers at
-Massachusetts General Hospital (MGH), we have designed and implemented the
-system to handle the fast growing corpus of collected EEG data. This end-to-end
-system handles the storage, processing, and visualization of EEG data. The
-goal of the system is to provide a scalable architecture for concurrent
-analysis of patient records with near real-time interactivity. Each layer of
-the system is optimized for use and evaluated across hundreds of gigabytes of
-patient data. \\
+In map reduce, data is loaded onto different computers and an computation is performed on it (the map phase) that results 
+in a group of key value pairs. The final phase of map reduce,the reduce phase assumes that all key-value pairs with the same
+key are grouped onto the same machine. Thus, an intermediate phase that these systems handle themselves is the shuffle phase where
+data is transferred so that all key value pairs with the same keys result to be on the same machine. 
+\\
+
+The following example in Figure~\ref{fig:shuffle_basic} details the inner workings 
+of what happens in a shuffle for map reducer. Suppose we want to count the 
+number of letters in a distributed file. The mappers will count the number of
+letters in their individual file. However, we need to aggregate this and 
+thus all the counts for letter a will be sent to worker1, letter b will be sent to worker 2,
+letter c will be sent to worker c. These reducers will then promptly aggregate the counts that they receive from the 
+mappers.
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[scale=0.5]{./img/pinky-and-the-brain.png}
-\caption{Etymology of Pinky's name.}
-\label{fig:pinky-and-the-brain}
+\includegraphics[scale=1.0]{./img/shuffle_basic.png}
+\caption{Shuffle for Letter Count in Map Reduce. The red arrows represent the transfer of the A key,
+the blue arrow represents the transfer of the B key, and the black arrows represents the transfer of the C key}
+\label{fig:shuffle_basic}
 \end{center}
 \end{figure}
+
+Because of the huge amounts of keys, these systems do not deal with on the granurality of keys.
+nstead, they deal with the concepts of partitions. These systems have different partitioning functions
+that map key-value pairs to different partitions. Some popular partition schemes include range and hash partitioning.
+As long as all the mappers agree to partition their data in the same way and send each partition that is the same to the same reducer, we are ensured that any two keys that are the same will be in the same partition. 
 
 \section{Overview of EEG Analysis}\label{intro-ch:eeg-overview}
 

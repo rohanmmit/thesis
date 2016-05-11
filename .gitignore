@@ -6,7 +6,7 @@
 *.fls
 *.out
 *.toc
-
+*.DS_STORE
 ## Intermediate documents:
 *.dvi
 *-converted-to.*
