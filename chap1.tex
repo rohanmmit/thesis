@@ -18,6 +18,7 @@ One key and slow stage that both of these systems have, is that because they are
 where data must be transferred between machines, called the shuffle stage. This shuffle stage can be the bottleneck and be the reason for low performance of jobs.
 \section{Shuffle} 
 
+\subsection{Shuffle Introduction}
 In map reduce, data is loaded onto different computers and an computation is performed on it (the map phase) that results 
 in a group of key value pairs. The final phase of map reduce,the reduce phase assumes that all key-value pairs with the same
 key are grouped onto the same machine. Thus, an intermediate phase that these systems handle themselves is the shuffle phase where
@@ -45,6 +46,13 @@ Because of the huge amounts of keys, these systems do not deal with on the granu
 nstead, they deal with the concepts of partitions. These systems have different partitioning functions
 that map key-value pairs to different partitions. Some popular partition schemes include range and hash partitioning.
 As long as all the mappers agree to partition their data in the same way and send each partition that is the same to the same reducer, we are ensured that any two keys that are the same will be in the same partition. 
+
+\subsection {Shuffle Analysis}
+
+Throughout the shuffle process, we want to balance the amount of data being sent to the reducers. 
+These systems are constrained by the slowest worker, so generally we want to minimize the latencies of the slowest worker.
+By balancing the data being sent, we can first reduce the latency for network transfer. Second, because the data each node 
+has to process is more balanced, we can reduce the execution time for the slowest node.  
 
 \section{Overview of EEG Analysis}\label{intro-ch:eeg-overview}
 
