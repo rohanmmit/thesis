@@ -1,0 +1,41 @@
+%% This is an example first chapter.  You should put chapter/appendix that you
+%% write into a separate file, and add a line \include{yourfilename} to
+%% main.tex, where `yourfilename.tex' is the name of the chapter/appendix file.
+%% You can process specific files by typing their names in at the 
+%% \files=
+%% prompt when you run the file main.tex through LaTeX.
+\chapter{Future Research and Conclusion}
+
+\section{Future Research}
+
+\subsection{Extension of Shuffle}
+
+The new version of the shuffle rdd is limited in a couple ways. First, each reducer can only 
+fetch partitions consecutively, so allowing it to pick non-consecutive partitions could potentially 
+improve performance.
+
+Second, the current version only supports providing the number of reducers, but other formats such
+as specificying the maximum bytes a reducer can have, and then system automatically determines the 
+number of reducers.
+
+\subsection {Extension to Join}
+
+First, we hijack the exchange framework to make the quickest possible change to allow our optmization,
+but we cuold probably do this in a cleaner fashion.
+
+Second, the users has to statically pass in thresholds that determine when to switch between broadcast and
+shuffle joins. It would be useful if the system could determine this based on factors such as the size of the rdd
+s as well as additional info such as the ram of each machine as well as the network bandwith.
+
+Third, we either broadcast an entire RDD or default to a shuffle pattern. However, if RDD1 has a big partition 1 and
+a small partition2 and RDD2 has a small partition 1 and big partition 2, we still do a shuffle. However, we could possibly save time
+by having RDD1 broadcast its partion 1 and RDD2 broadcasting its partition 2.
+
+
+\section {Conclusion}
+In conclusion, we show that improvements can be made to shuffle stage of Spark.
+Instead of predetermining our shuffle strategy, we can adapt it based on the output of the mappers.
+We show that we can use this for improvments in the regular shuffle, in joins with rdds, and in 
+joins using in Spark Sql. Although we have shown gains, the work can be extended to show further possible gains. 
+
+
