@@ -6,29 +6,27 @@
 %% prompt when you run the file main.tex through LaTeX.
 \chapter{Introduction}\label{intro-ch}
 
-\section{Distributed Systems}
+\section{Spark and MapReduce}
 
 
-With the rise of big data, new data processing systems have been designed to help process it. 
-Instead of relying on using just onemore powerful computers, these systems use many computers and are thus distributed in nature due to economic costs,scalability, and fault tolerance. Because programming in these  distributed environments is challenging, data processing systems
-try to abstract this from the user and provide a simple interface for them. One of the most popular systems is Map Reduce,
-invented by Google, which provides a simple map and reduce operation to the user. Another of these systems is Spark, which provides
-a slightly more expressive api then map reduce and also has different modes of fault tolerance than spark along with caching. 
-One key and slow stage that both of these systems have, is that because they are distributed in nature, they have a stage
-where data must be transferred between machines, called the shuffle stage. This shuffle stage can be the bottleneck and be the reason for low performance of jobs.
+New data processing systems such as Spark and MapReduce have been designed to help process the increasing amount of data. 
+Instead of relying on just one powerful computer, these systems use many computers due to lower costs and increased scalability and fault tolerance. 
+Because these systems are distributed in nature, they have stages (shuffle stages) where they transfer information between jobs. 
+.
 \section{Shuffle} 
 
+We will use MapReduce to explain the shuffle in more detail, but the main concepts still apply to Spark.
+
 \subsection{Shuffle Introduction}
-In map reduce, data is loaded onto different computers and an computation is performed on it (the map phase) that results 
-in a group of key value pairs. The final phase of map reduce,the reduce phase assumes that all key-value pairs with the same
-key are grouped onto the same machine. Thus, an intermediate phase that these systems handle themselves is the shuffle phase where
-data is transferred so that all key value pairs with the same keys result to be on the same machine. 
+In the first stage of MapReduce, the map phase, the data is loaded onto different computers and computation is performed on it that results 
+in a group of key value pairs. The final phase of MapReduce,the reduce phase, assumes that all key-value pairs with the same
+key are grouped together onto the same machine. We call this property the shuffle guarentee. Thus, the shuffle phase, an intermediate phase that the system handles internally, transfers key value pairs to satisfy the shuffle guarentee. 
 \\
 
-The following example in Figure~\ref{fig:shuffle_basic} details the inner workings 
-of what happens in a shuffle for map reducer. Suppose we want to count the 
-number of letters in a distributed file. The mappers will count the number of
-letters in their individual file. However, we need to aggregate this and 
+Figure~\ref{fig:shuffle_basic} display the inner workings 
+of the shuffle phase in MapReduce. For instance, a programmer may  want to count the 
+number of letters in a distributed file. The mappers will each load part of the distributed file and count the number of
+letters in it. However, we need to aggregate this and 
 thus all the counts for letter a will be sent to worker1, letter b will be sent to worker 2,
 letter c will be sent to worker c. These reducers will then promptly aggregate the counts that they receive from the 
 mappers.
@@ -41,22 +39,19 @@ mappers.
 \end{center}
 \end{figure}
 
-Because of the huge amounts of keys, these systems do not deal with on the granurality of keys.
-nstead, they deal with the concepts of partitions. These systems have different partitioning functions
-that map key-value pairs to different partitions. Some popular partition schemes include range and hash partitioning.
-As long as all the mappers agree to partition their data in the same way and send each partition that is the same to the same reducer, we are ensured that any two keys that are the same will be in the same partition. 
+Due of the huge amounts of keys, these systems do not transfer data on the granurality of keys.
+Instead, they have the concept of partitions, which key value pairs with different keys. Programmers can pick different partitioning functions such as hash partitiong and range partitiong to map keys to partitions. Two keys that are identical are guarenteed to mapped to the same partition. As long as all the mappers partition their data in the same way and send each the corresponding partitions to the same reducer, the system satisfies 
+the shuffle guarentee. 
 
 \subsection {Shuffle Analysis}
 
 Throughout the shuffle process, we want to balance the amount of data being sent to the reducers. 
 These systems are constrained by the slowest worker, so generally we want to minimize the latencies of the slowest worker.
-By balancing the data being sent, we can first reduce the latency for network transfer. Second, because the data each node 
-has to process is more balanced, we can reduce the execution time for the slowest node. We illustrate this in the following situation.
-In Figure~\ref{fig:shuffle_unbalanced}, we demonstrate a common scenario that happens in these shuffle scenarios. Let us say we have a simple
-partitioning scheme, where the reducer a partition lands up is determined by partition id mod the number of works. This seems reasonable
-as typically we do not have extra information about the size of the partitions. This leads to situations where we one reducer receiving
-50MB of data while another reducer gets 90MB of data. However, if we knew the size of each partition after the mappers have run,
-we could more intelligently partition the data. As seen in Figure~\ref{fig:shuffle_balanced}, we see that by intelligently distributing the partitions in the same situation we can lead to each partition for 60MB. 
+A more balanced workload for reducers reduces network latency for transferring the data and also reduces the execution time for the slowest worker.
+Figure~\ref{fig:shuffle_unbalanced}, depicts a shuffle scenario that results in unbalanced paritions. Each mapper partition gets sent to the reducer id equal to the partition id mod the number of reducers. This protocol in theory should result in pretty balanced reducers but is not guarenteed to. As depicted, Reducer 3 receives 
+40MB of data but Reducer 1 receives 90MB of data. However, if we knew the size of each partition after the mappers have run,
+we could more intelligently balance the reducers. As seen in Figure~\ref{fig:shuffle_balanced}, with the same map output partitions, the system could attain complete balance
+of 60MB for each reducer.
 
 
  \begin{figure}[h]
@@ -80,15 +75,10 @@ we could more intelligently partition the data. As seen in Figure~\ref{fig:shuff
 \subsection{Join Basics}
 
 A common operation in these data processing environments is a join.
-A join basically combines two datasets by finding intersections between
-the keys between the two different datasets. An illustrative example
-is seen below.For instance, we have data in  \ref{table:join1} and corresponding
-data in \ref{table:join2} that we are trying to join based on the intersection
-of key1 and key2. The resulting output is what we will find in \ref{table:join3}   
-We will see a twice as we will see the interesection with other a in table 2,
-b is not present in the output table because is not found in table 2, while 
-c will be present because its output is found in table 3.
-
+A join basically combines two tables by finding intersections between
+keys in respective columns. For instance, if we have   
+Table\ref{table:join1} and Table\ref{table:join2} that we are trying to join based on the intersection
+of key1 and key2, the resulting output is Table\ref{table:join3}   
 \begin{table}[h!]
 \centering
  \begin{tabular}{|c |c |c |c|}
@@ -141,28 +131,27 @@ c will be present because its output is found in table 3.
 \end{table}
 
 \subsection{Shuffle Join}
-The above description describes how a join works in a simple non-distributed case. 
-However, we are dealing with joins in a distributed fashion. Joins are very similar
-to the shuffle but with two sets of partitions that we have to merge. 
-For instance, take a look at the figure \ref{fig:shuffle_join}
-As depicted, basically a shuffle takes places twice, with both datasets sending all their
-corresponding to the same reducer. For instance, for both datasets, all of the keys that 
-mapped to partition 1 was sent to the reducer 1 and this happens respectively for the rest of the partitions.
+The actual implementation of joins in MapReduce is very similar to the
+shuffle scenario presented above. Instead of one dataset participating in the shuffle,
+two datasets participate in the shuffle and ensure that their corresponding partitions 
+are both sent to the same reducer.  
+Figure \ref{fig:shuffle_join} details a shuffle join.
+For both datasets, all of the keys that 
+mapped to partition 1 were sent to the reducer 1 and this happens respectively for the rest of the partitions.
 
  \begin{figure}[h]
 \begin{center}
 \includegraphics[scale=1.0]{./img/shuffle_join.png}
-\caption{Typical Shuffle Join.}
+\caption{Typical Shuffle Join}
 \label{fig:shuffle_join}
 \end{center}
 \end{figure}
 
 \subsection {Broadcast Join}
- One thing to notice in the diagram is that it seems that mappers and reducers
-are different machines. However, this distinction is imaginary and wholly based to help 
-logic decision. In fact, they do run on the same machines. 
-Because of this not all data it transferred over the network. If reducer 1 corresponds to mapper 1, then it
-actually does not need to send the network of 10MB corresponding to partition 1 already on the mapper.
+The diagram above  may seem to imply that mappers and reducers
+are different machines. However, this distinction is artificial and there are no seperate machines for mappers and reducers. 
+Therefore, not all data in the shuffle stage is transferred over the network. In Figure~\ref{fig:shuffle_basic}, if Mapper 1
+and Reducer 1 were the same machine, the key value pair A=7 would be read locally and not have to be the sent over the network.
 
 In certain situations, it might make sense to keep all of dataset1 in place and transmit all of dataset 2 to each
 machine in dataset 1. This method still provides correctness even though dataset 1 stays in place, because all partitions
