@@ -153,18 +153,13 @@ are different machines. However, this distinction is artificial and there are no
 Therefore, not all data in the shuffle stage is transferred over the network. In Figure~\ref{fig:shuffle_basic}, if Mapper 1
 and Reducer 1 were the same machine, the key value pair A=7 would be read locally and not have to be the sent over the network.
 
-In certain situations, it might make sense to keep all of dataset1 in place and transmit all of dataset 2 to each
-machine in dataset 1. This method still provides correctness even though dataset 1 stays in place, because all partitions
-of dataset 2 are sent. The advantages are that if dataset 2 is super small and dataset 1 can just stay in place, 
-the network latency can be reduced. The following diagram \ref{fig:broadcast_join} demonstrates how data would be shuffled
-using the broadcat join. Notice how the amount of data being transferred would be in the kiloybytes instead of the megabytes.
+Because transferring data over the network could be a bottleneck, the broadcast join tries to increase the amount of data 
+being read locally.For instance, in Figure~\ref{fig:shuffle_join}, dataset 1 is drastically bigger than dataset 2. As seen in Figure~\ref{fig:broadcast_join},
+the broadcast join keeps the bigger dataset in place and sends the entirety of dataset 2 to every reducer. Even though all of dataset 1 stays in place, this method satisfies theshuffle party because all partitionsof dataset 2 are sent. The diagram shows that the network traffic is reduced from megabytes to kilobytes.
 
-Broadcast Join is not always the optimal strategy. Because the entirety of dataset2 is sent to all partitions, the amount of computation
-increases. Additionally, if the datasets are sufficiently the same size, than the amount of data transferred over the network will actually
-increase because dataset 2 is sent in its entirety to every machine. 
-
-Thus, when choosing join strategies it becomes clear that certain strategies are good in certain situations. Thus, it becomes imperative
-to be able to pick the strategy after the mappers have run and we know the sizes of them.
+Broadcast Join is not always the optimal strategy. Because the entirety of the smaller dataset is sent to all partitions, the amount of total computation time increases. Additionally, if the datasets are approximately the same size, network traffic will actually increase. 
+Each join strategy is the optimal strategy in different situations. Thus, it becomes imperative
+to be able to pick the strategy after the mappers have run and we know the size of the map output files..
 
  \begin{figure}[h]
 \begin{center}
