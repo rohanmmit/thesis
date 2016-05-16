@@ -48,7 +48,7 @@ the shuffle guarentee.
 
 MapReduce is constrained by the slowest worker; therefore, minimizing the latency of the slowest worker should improve performance.
 Balancing the amount of data sent to each reducer helps achieve this by reducing both network latency and also the execution time for the slowest worker.
-Figure~\ref{fig:shuffle_unbalanced}, depicts a shuffle scenario that results in unbalanced paritions. A basic heuristic is used with each reducer getting half of the mapper output pations. Generally, this protocol should result in  balanced reducers, but as seen, Reducer 2 receives 
+Figure~\ref{fig:shuffle_unbalanced}, depicts a shuffle scenario that results in unbalanced paritions. A basic heuristic is used with each reducer getting half of the mapper output partitions. Generally, this protocol should result in  balanced reducers, but as seen, Reducer 2 receives 
 twice the amount of data as Reducer 1. However, if the system knew the sizes of the map output partitions,
 it could more intelligently balance the reducers. As seen in Figure~\ref{fig:shuffle_balanced}, with the same map output partitions, the system could attain complete balance
 of 60MB for each reducer.
@@ -158,10 +158,10 @@ Reducer 2 received partition 2, and reducer 3 received partition 3.
 The diagram above  may seem to imply that mappers and reducers
 are different machines. However, this distinction is artificial and there are no seperate machines for mappers and reducers. 
 Therefore, not all data in the shuffle stage is transferred over the network. In Figure~\ref{fig:shuffle_basic}, if Mapper 1
-and Reducer 1 were the same machine, the key value pair A=7 would be read locally and not have to be received over the network.
+and Reducer 1 were the same machine, the key-value pair A=7 would be read locally and not have to be received over the network.
 
 Because transferring data over the network could be a bottleneck, the broadcast join tries to increase the amount of data 
-being read locally.For instance, in Figure~\ref{fig:shuffle_join}, Dataset 1 is drastically bigger than Dataset 2. As seen in Figure~\ref{fig:broadcast_join},
+being read locally. For instance, in Figure~\ref{fig:shuffle_join}, Dataset 1 is drastically bigger than Dataset 2. As seen in Figure~\ref{fig:broadcast_join},
 the broadcast join keeps the bigger dataset in place and sends the entirety of Dataset 2 to every reducer. Even though all of Dataset 1 stays in place, this method will still find all intersections beteen the datasets  because all partitions of Dataset 2 are sent to every reducer. The diagram shows that only Dataset 2 is transferred and thus the  network traffic is reduced from megabytes to kilobytes.
 
 Broadcast Join is not always the optimal strategy. Because the entirety of the smaller dataset is sent to every partition, the amount of total computation time increases. Additionally, if the datasets are approximately the same size, network traffic will actually increase. 

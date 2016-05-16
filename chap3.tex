@@ -19,14 +19,14 @@ four AWS m1.large machines in the us west zone.
 
 \section{Broadcast and ShuffleJoinRDD}
 
-For this test, we created a bigger RDD with key-value pairs of (x,2 * x) with x ranging from 1 to 100 milllion.
+For this test, we created a bigger RDD with key-value pairs of (x, 2 * x) with x ranging from 1 to 100 milllion.
 As seen in the Figure~\ref{fig:rddjoin}, we then then manipulated the number of key-value pairs of the smaller RDD, 
 with each key value pairs being (x,x). We measured the performance for the ShuffleJoinRDD and BroadcastJoinRDD on AWS. 
 As expected, initially the BroadcastJoinRDD performs better as it requires significantly less network traffic.
 However, it soon becomes slower then the ShuffleJoinRDD as the smaller input RDD increases.
 Increasing the smaller RDD does not dramatically influence the ShuffleJoinRDD as it is more bottlenecked by the bigger RDD and just
-sends pieces of the smaller RDD to each partition. However, this increase significantly influences the BroadcastJoinRDD b
-because its entirety is transmitted to every partition.
+sends pieces of the smaller RDD to each partition. However, this increase significantly influences the BroadcastJoinRDD 
+because transmits the entirety of the smaller RDD to every partition.
 
 \begin{figure}[h]
 \begin{center}
