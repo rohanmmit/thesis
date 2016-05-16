@@ -12,7 +12,7 @@
 %% file should be \input (not \include 'd) from cover.tex.
 
 Because most data processing systems are distributed in nature, data must be transferred
-between these machines. Currently, Spark data processing systems predetermines the strategies for how this data is to be shuffled
-before the job has started, but in certain situations, perfomance may be improved by not performing the typical strategy.
-We add functionality to track metrics about the  data during the job and adapt our strategy during the job.
-We use this strategy to improve regular shuffle performance,  joins using Spark's RDD interface, and joins in Spark SQl.
+between these machines. Currently, Spark, a prominent such system, predetermines the strategies for how this data is to be shuffled
+but in certain situations, perfomance may be improved by not performing the typical strategy.
+We add functionality to track metrics about the data during the job and appropriately adapt our shuffle strategy.
+We show improvements in regular shuffle performance, joins using Spark's RDD interface, and joins in Spark SQl.

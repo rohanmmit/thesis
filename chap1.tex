@@ -10,44 +10,45 @@
 
 
 New data processing systems such as Spark and MapReduce have been designed to help process the increasing amount of data. 
-Instead of relying on just one powerful computer, these systems use many computers due to lower costs and increased scalability and fault tolerance. 
-Because these systems are distributed in nature, they have stages (shuffle stages) where they transfer information between jobs. 
-.
+Instead of relying on just one powerful computer, these systems use many computers due to lower costs, increased scalability, and improved fault tolerance. 
+Because these systems are distributed in nature, they have stages (shuffle stages) where they transfer information between computers. 
 \section{Shuffle} 
 
 We will use MapReduce to explain the shuffle in more detail, but the main concepts still apply to Spark.
 
 \subsection{Shuffle Introduction}
 In the first stage of MapReduce, the map phase, the data is loaded onto different computers and computation is performed on it that results 
-in a group of key value pairs. The final phase of MapReduce,the reduce phase, assumes that all key-value pairs with the same
-key are grouped together onto the same machine. We call this property the shuffle guarentee. Thus, the shuffle phase, an intermediate phase that the system handles internally, transfers key value pairs to satisfy the shuffle guarentee. 
-\\
+in a group of key-value pairs. The final phase of MapReduce,the reduce phase, assumes that all key-value pairs with the same
+key are grouped together onto the same machine. We call this property the shuffle guarentee. Thus, the shuffle phase, an intermediate phase that the system handles internally, transfers key-value pairs between machines to satisfy the shuffle guarentee. 
+
 
 Figure~\ref{fig:shuffle_basic} display the inner workings 
 of the shuffle phase in MapReduce. For instance, a programmer may  want to count the 
 number of letters in a distributed file. The mappers will each load part of the distributed file and count the number of
-letters in it. However, we need to aggregate this and 
+letters in their part. However, the systems needs to aggregate the count for each letter and 
 thus all the counts for letter a will be sent to worker1, letter b will be sent to worker 2,
 letter c will be sent to worker c. These reducers will then promptly aggregate the counts that they receive from the 
 mappers.
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[scale=1.0]{./img/shuffle_basic.png}
-\caption{Shuffle for Letter Count in Map Reduce}
+\includegraphics[scale=0.6]{./img/shuffle_basic.png}
+\caption{Shuffle for Letter Count in MapReduce}
 \label{fig:shuffle_basic}
+This figures demonstrates a basic shuffle in MapReduce. 
+Red arrows indicate the transfer of letter counts of A,blue arrows are used for B,
+and black arrows are used for C. 
 \end{center}
 \end{figure}
 
 Due of the huge amounts of keys, these systems do not transfer data on the granurality of keys.
-Instead, they have the concept of partitions, which key value pairs with different keys. Programmers can pick different partitioning functions such as hash partitiong and range partitiong to map keys to partitions. Two keys that are identical are guarenteed to mapped to the same partition. As long as all the mappers partition their data in the same way and send each the corresponding partitions to the same reducer, the system satisfies 
+Instead, they use partitions, which contain key-value pairs with different keys. Programmers can pick different partitioning functions such as hash partitiong and range partitiong to map keys to partitions. Two identical keys are guarenteed to be in the same partition. As long as all the mappers partition their data in the same way and send each partition with the same index to the same reducer, the system satisfies 
 the shuffle guarentee. 
 
 \subsection {Shuffle Analysis}
 
-Throughout the shuffle process, we want to balance the amount of data being sent to the reducers. 
-These systems are constrained by the slowest worker, so generally we want to minimize the latencies of the slowest worker.
-A more balanced workload for reducers reduces network latency for transferring the data and also reduces the execution time for the slowest worker.
+MapReduce is constrained by the slowest worker; therefore, minimizing the latency of the slowest worker should improve imperformance.
+Balancing the amount of data sent to each reducer helps achieve this by reducing both network latency and also the execution time for the slowest worker.
 Figure~\ref{fig:shuffle_unbalanced}, depicts a shuffle scenario that results in unbalanced paritions. Each mapper partition gets sent to the reducer id equal to the partition id mod the number of reducers. This protocol in theory should result in pretty balanced reducers but is not guarenteed to. As depicted, Reducer 3 receives 
 40MB of data but Reducer 1 receives 90MB of data. However, if we knew the size of each partition after the mappers have run,
 we could more intelligently balance the reducers. As seen in Figure~\ref{fig:shuffle_balanced}, with the same map output partitions, the system could attain complete balance
