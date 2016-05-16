@@ -8,10 +8,9 @@
 
 \section{Spark}
 
-All of the code was implemented in Spark. Although the code was implemented in Spark, 
-it could also be implemented in MapReduce to achieve similar performance improvement.
-The  Resilient Distributed Dataset(RDD) is the main interface within Spark.
-The RDD can be created from data or from another RDD. The key attributes of an RDD are its inputs,
+All of the code was implemented in Spark but could also be implemented in MapReduce to achieve similar performance improvement.
+The Resilient Distributed Dataset(RDD) is the main programming interface within Spark.
+An RDD can be created from data or from another RDD. The key attributes of an RDD are its inputs,
 the number of partitions, and how each of its partitions is computed based on its inputs.
 
 Profressor Matei Zaharia added code that allowed the tracking of sizes of map output partitions.   
@@ -22,15 +21,15 @@ The RDD we developed is a new version of ShuffledRDD, ShuffledRDD2.
 Its inputs are first a shuffle dependency, which is basically a bunch of map output partitions, and second, a number of reducers, or equivalentally the 
 number of partitions for ShuffledRDD2. 
 In the regular ShuffledRDD, each of its partition naively requests a segment of map output partitions as depicted in Figure~\ref{fig:shuffle_unbalanced}.
-ShuffledRDD2 implements the more complicated scheme seen in Figure~\ref{fig:shuffle_balanced.} 
-The current Spark API only allows reducer partitions to request consecutive map partitions. In other words, it is impossible for a ShuffledRDD2 partition to have map output partitions 1 and 3, without having 2. For this constraint and the given number of reducer partitions , ShuffleRDD2 assigns map output partitions to optimally balance its reduce partitions. 
+ShuffledRDD2 implements the more complicated scheme seen in Figure~\ref{fig:shuffle_balanced}. 
+The current Spark API only allows reducer partitions to request consecutive map partitions. In other words, it is impossible for a ShuffledRDD2 partition to have map output partitions 1 and 3, without having 2. For this constraint and the given number of reducer partitions, ShuffleRDD2 assigns map output partitions to optimally balance the number of bytes received by each of its reduce partitions. 
 
 \section{Joins}
 
 \subsection{ShuffleReader Changes}
 
-As mentioned in the broadcast join section, the bigger RDD must stay in place. The current interface only allows a reducer to request a specific map output partition
- from all of the mappers. For the bigger RDD, the system would then have to request map output partitions from other machines, which defeats the purpose of the broadcast join. Thus, we added the capability of requesting a specific partition from just one mapper. 
+In the broadcast join, the bigger RDD must stay in place. The current interface only allows a reducer to request a specific map output partition
+from all of the mappers. For the bigger RDD, the system would then have to request map output partitions from other machines, which defeats the purpose of the broadcast join. Thus, we added the capability of requesting a specific partition from just one mapper. 
 
 \subsection{ShuffleJoinRDD and BroadcastJoin RDD}
 
@@ -42,35 +41,36 @@ dependencies must be partitioned in the same way; otherwise, two identical keys 
 
 The ShuffleJoinRDD implementation is very similar to ShuffledRDD. Instead of fetching map output partitions
 from just one dependency, it fetches the corresponding map output partitions from both dependencies.   
-The user specificies the number of ShuffleJoinRDD partitions and each paritition request a corresponding fraction
+The user specificies the number of ShuffleJoinRDD partitions and each paritition requests a corresponding fraction
 of the map output partitions.
 For instance, ShuffledJoinRDD partition 1 will fetch Dataset1 Partition 1 and Dataset2
 Partition 1 from all of the workers. Once these partitions are fetched, its create a map with the key-value pairs of the smaller partition.
-It iterate through the keys of the bigger partition, seeing if they are present in this map, and if so,  adding the intersection to the ourput.\\
+Subsequently, it iterates through the keys of the bigger partition, seeing if they are present in this map, and if so, adding the intersection to the output.
 
 The BroadcastJoinRDD implements the broadcast shuffle.
 For each BroadcasstJoinRDD partition, it requests one local map output partition from the bigger RDD using the new request capability and  
-all of the paritions from the smaller RDD. The number of partitions is equal to the number of partitions of the bigger input RDD. The system use the same strategy
-with the map and the iteration as the ShuffledJoinRDD to then find the intersections.
+all of the paritions from the smaller RDD. The number of partitions is equal to the number of partitions of the bigger input RDD. We use the location
+preferences api of the RDD to ensure that the reducer parititions are placed on the same machines that the mapper partition it is requesting, to ensure data is
+requested locally instead of over the network. The system use the same strategy with the map and the iteration as the ShuffledJoinRDD to then find the intersections.
 
 \subsection{Joins in Spark SQL}
 
 Many programmers and data analysts prefer not to use the RDD interface
-and are more familiar with the sql; thus, Spark offers a sql like interface or SparkSql. One popular operation within sql is join.
-Although the user still writes in sql, Spark still executes the code using RDDs.
+and are more familiar with the SQL; thus, Spark offers a SQL like interface or SparkSQL. One popular operation within SQL is join.
+Although the user still writes in SQL, Spark still executes the code using RDDs.
 
-Because we are not just using the RDD interface and Spark automatically converts the sql query into a query plan,
+Because we are not just using the RDD interface and Spark automatically converts the SQL query into a query plan,
 the implementation is much more complicated and thus we only implement our optimization for sort merge join.
-Although the exact semantics for how a sort merge join can be found here,the sort merge join still uses the shuffle and requires that every
+Although the exact semantics for how a sort merge join can be found here,the sort merge join still must shuffle data around as it requires that every
 key that could intersect should be sent to the same reducer.
-To help achieve this, the sort merge join applies an exchange operator on each of the mapoutputs. These exchange operators produce
-ShuffleRowRDDS, which for our purposes are equivalent to ShuffledRDDS. In the next stage, each partition in the first ShuffledRowRDD is compared
+To help achieve this, the sort merge join applies an exchange operator on each of the map outputs. These exchange operators produce
+ShuffleRowRDDS, which for our purposes are equivalent to ShuffledRDDs. In the next stage, each partition in the first ShuffledRowRDD is compared
 to the partition with the same index in the second ShuffledRowRDD. The only difference between this and how the join RDDs work is pretty semantic
-in  that instead of one RDD requesting partitions from multiple mappers, two RDD's repartition their data and then another one compared partition by partion.
+in  that instead of one RDD requesting partitions from multiple mappers, two RDD's repartition their data and then another one compares them partition by partition.
 By default, the code performs a shuffle join almost exactly in a manner with how the ShuffleJoinRDD works. One ShuffleRowRDD requests 
-the corresponding partitions from its mapoutput just like Figure~\ref{fig:shuffle_unbalanced} and the other ShuffleRowRDD does the exact same but with its dataset.  
+the corresponding partitions from its mappers just like Figure~\ref{fig:shuffle_unbalanced} and the other ShuffleRowRDD does the exact same but with its dataset.  
 
 However, if only one input RDD is smaller then a user-configured threshold, the system uses the broadcast join optimization. The bigger ShuffledRowRDD will be exactly like its
-parent. The other ShuffledRowRDD will have the same number of partitions as the bigger ShuffledRowRDD with each partition containing the entirety of the smaller input RDD. 
+parent. We achieve this by setting number of partitions for the ShuffledRowRDD to be equal to its parent and then having each partition request a specific partition from the parent using the new request api and set its location preference accordingly. The other ShuffledRowRDD will have the same number of partitions as the bigger ShuffledRowRDD with each partition containing the entirety of the smaller input RDD. 
 The correctness guarentees is the same as the BroadcastJoinRDDs.  
 

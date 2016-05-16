@@ -18,16 +18,16 @@ We will use MapReduce to explain the shuffle in more detail, but the main concep
 
 \subsection{Shuffle Introduction}
 In the first stage of MapReduce, the map phase, the data is loaded onto different computers and computation is performed on it that results 
-in a group of key-value pairs. The final phase of MapReduce,the reduce phase, assumes that all key-value pairs with the same
+in a group of key-value pairs. The final phase of MapReduce, the reduce phase, assumes that all key-value pairs with the same
 key are grouped together onto the same machine. We call this property the shuffle guarentee. Thus, the shuffle phase, an intermediate phase that the system handles internally, transfers key-value pairs between machines to satisfy the shuffle guarentee. 
 
 
 Figure~\ref{fig:shuffle_basic} display the inner workings 
-of the shuffle phase in MapReduce. For instance, a programmer may  want to count the 
+of the shuffle phase. For instance, a programmer may  want to count the 
 number of letters in a distributed file. The mappers will each load part of the distributed file and count the number of
 letters in their part. However, the systems needs to aggregate the count for each letter and 
-thus all the counts for letter a will be sent to worker1, letter b will be sent to worker 2,
-letter c will be sent to worker c. These reducers will then promptly aggregate the counts that they receive from the 
+thus all the counts for letter A will be sent to Reducer 1, letter B will be sent to Reducer 2,
+and letter C will be sent to Reducer 3. These reducers will then promptly aggregate the counts that they receive from the 
 mappers.
 
 \begin{figure}[h]
@@ -46,9 +46,9 @@ the shuffle guarentee.
 
 \subsection {Shuffle Analysis}
 
-MapReduce is constrained by the slowest worker; therefore, minimizing the latency of the slowest worker should improve imperformance.
+MapReduce is constrained by the slowest worker; therefore, minimizing the latency of the slowest worker should improve performance.
 Balancing the amount of data sent to each reducer helps achieve this by reducing both network latency and also the execution time for the slowest worker.
-Figure~\ref{fig:shuffle_unbalanced}, depicts a shuffle scenario that results in unbalanced paritions. A basic heuristic is used with each reducer getting half of the mapper output pations. In theory, this protocol in theory should generally result in  balanced reducers, but as seen, Reducer 2 receives 
+Figure~\ref{fig:shuffle_unbalanced}, depicts a shuffle scenario that results in unbalanced paritions. A basic heuristic is used with each reducer getting half of the mapper output pations. Generally, this protocol should result in  balanced reducers, but as seen, Reducer 2 receives 
 twice the amount of data as Reducer 1. However, if the system knew the sizes of the map output partitions,
 it could more intelligently balance the reducers. As seen in Figure~\ref{fig:shuffle_balanced}, with the same map output partitions, the system could attain complete balance
 of 60MB for each reducer.
@@ -60,6 +60,8 @@ of 60MB for each reducer.
 \caption{Unbalanced Shuffle} 
 \label{fig:shuffle_unbalanced}
 \end{center}
+Reducer 1 requests partition 1 and 2 while Reducer 2 requests partition 3 and 4. 
+This results in Reducer 2 receiving 80MB of data while Reducer 1 receives only 40MB of data. 
 \end{figure}
 
  \begin{figure}[h]
@@ -132,12 +134,12 @@ of key1 and key2, the resulting output is Table \ref{table:join3}
 
 \subsection{Shuffle Join}
 The actual implementation of joins in MapReduce is very similar to the
-shuffle scenario presented above. Instead of just having output partitions for one dataset,
-the mappers have output partitions for two datasets and ensure that all partitions for both datasets  with the same index 
+shuffle scenario presented above. Instead of having output partitions for just one dataset,
+the mappers have output partitions for two datasets and ensure that all partitions for both datasets with the same index 
 are sent to the same reducer.  
 Figure \ref{fig:shuffle_join} details a shuffle join.
 For both datasets, all of the keys that 
-mapped to partition 1 were sent Reducer 1 and this happens respectively for the rest of the partitions. Because
+mapped to partition 1 were sent to Reducer 1 and this happens respectively for the rest of the partitions. Because
 all identical keys are in the same partition and each partition with the same index is sent to the same reducer,
 the system is guarenteed to find all intersections required for the join.
 
@@ -162,7 +164,7 @@ Because transferring data over the network could be a bottleneck, the broadcast 
 being read locally.For instance, in Figure~\ref{fig:shuffle_join}, Dataset 1 is drastically bigger than Dataset 2. As seen in Figure~\ref{fig:broadcast_join},
 the broadcast join keeps the bigger dataset in place and sends the entirety of Dataset 2 to every reducer. Even though all of Dataset 1 stays in place, this method will still find all intersections beteen the datasets  because all partitions of Dataset 2 are sent to every reducer. The diagram shows that only Dataset 2 is transferred and thus the  network traffic is reduced from megabytes to kilobytes.
 
-Broadcast Join is not always the optimal strategy. Because the entirety of the smaller dataset is sent to every partitions, the amount of total computation time increases. Additionally, if the datasets are approximately the same size, network traffic will actually increase. 
+Broadcast Join is not always the optimal strategy. Because the entirety of the smaller dataset is sent to every partition, the amount of total computation time increases. Additionally, if the datasets are approximately the same size, network traffic will actually increase. 
 Each join strategy is the optimal strategy in different situations. Thus, it becomes imperative
 to pick the strategy after the mappers have run and the size of the map output partitions is known.
 
