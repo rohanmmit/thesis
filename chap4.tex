@@ -11,8 +11,8 @@
 \subsection{Extension of Shuffle}
 
 ShuffledRDD2 is limited in a couple ways. First, each reducer can only 
-fetch partitions consecutively, so allowing it to pick non-consecutive partitions could potentially 
-improve performance.Second, the current version only supports inputing the number of reducers. Users could prefer
+fetch partitions consecutively, but these partitions are fetched individually. Batching these partition request together could
+help reduce overhead. Second, the current version only supports inputing the number of reducers. Users could prefer
 an interface where they input the maximum number of bytes a reducer can have and the system automatically determines the 
 number of reducers.
 
@@ -23,21 +23,22 @@ but we could conceivably do this in a cleaner manner.
 
 Second, users have to statically pass in thresholds that determine when to switch between broadcast and
 shuffle joins. The system should automatically determine this based on factors such as the size of the RDDs
- as well as additional info such as the network bandwith and memory of each machine.
+as well as additional info such as the network bandwith and memory of each machine.
 
 Third, we either broadcast an entire RDD or default to the shuffle pattern. However, if RDD1 has a big partition 1 and
-a small partition2 and RDD2 has a small partition 1 and big partition 2, the systems performs  a shuffle. However, the system could save time
+a small partition2 and RDD2 has a small partition 1 and big partition 2, the systems performs a shuffle. However, the system could save time
 by having RDD1 broadcast its partition 1 and RDD2 broadcast its partition 2.
 
 Fourth, in the broadcast join in Spark SQL, each ShuffleJoinRDD partition requests the entirety of its input.
-This request is made over the network for each partition, but generally  multiple ShuffleJoinRDD partitions are on the same machine.
+This request is made over the network for each partition, but generally multiple ShuffleJoinRDD partitions are on the same machine.
 Thus, a request should be made once per machine and stored in memory for the other partitions to use. 
 
 \section {Conclusion}
 In conclusion, we show that improvements can be made to shuffle stage of Spark.
 Instead of predetermining our shuffle strategy, we can adapt it based on the output of the mappers.
-We show that we can use this for improvments in the regular shuffle, in joins with rdds, and in 
-joins using in Spark Sql. Although we have shown improvements, the work can be extended with simple changes
- to further improve performance. 
+We show that these stategies improve  the regular shuffle rdd ,  joins with rdds, and  
+joins in Spark Sql. Although we have shown improvements, the work can be extended with simple changes
+to further improve performance. 
+
 
 
