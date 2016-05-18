@@ -76,7 +76,7 @@ This results in Reducer 2 receiving 80MB of data while Reducer 1 receives only 4
 
 \subsection{Join Basics}
 
-A common operation in these data processing environments is a join.
+A common operation in these data processing environments is a join \cite{join}.
 A join basically combines two tables by finding intersections between
 keys in respective columns. For instance, if we have   
 Table \ref{table:join1} and Table \ref{table:join2} that we are trying to join based on the intersection
@@ -161,7 +161,7 @@ Therefore, not all data in the shuffle stage is transferred over the network. In
 and Reducer 1 were the same machine, the key-value pair A=7 would be read locally and not have to be received over the network.
 
 Because transferring data over the network could be a bottleneck, the broadcast join tries to increase the amount of data 
-being read locally. For instance, in Figure~\ref{fig:shuffle_join}, Dataset 1 is drastically bigger than Dataset 2. As seen in Figure~\ref{fig:broadcast_join},
+being read locally \cite{sparkanalysis}. For instance, in Figure~\ref{fig:shuffle_join}, Dataset 1 is drastically bigger than Dataset 2. As seen in Figure~\ref{fig:broadcast_join},
 the broadcast join keeps the bigger dataset in place and sends the entirety of Dataset 2 to every reducer. Even though all of Dataset 1 stays in place, this method will still find all intersections beteen the datasets  because all partitions of Dataset 2 are sent to every reducer. The diagram shows that only Dataset 2 is transferred and thus the  network traffic is reduced from megabytes to kilobytes.
 
 Broadcast Join is not always the optimal strategy. Because the entirety of the smaller dataset is sent to every partition, the amount of total computation time increases. Additionally, if the datasets are approximately the same size, network traffic will actually increase. 

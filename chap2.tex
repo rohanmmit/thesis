@@ -56,12 +56,12 @@ requested locally instead of over the network. The system use the same strategy 
 \subsection{Joins in Spark SQL}
 
 Many programmers and data analysts prefer not to use the RDD interface
-and are more familiar with the SQL; thus, Spark offers a SQL like interface or SparkSQL. One popular operation within SQL is join.
+and are more familiar with the SQL; thus, Spark offers a SQL like interface or SparkSQL \cite{SparkSql}. One popular operation within SQL is join \cite{MapReduce}.
 Although the user still writes in SQL, Spark still executes the code using RDDs.
 
 Because we are not just using the RDD interface and Spark automatically converts the SQL query into a query plan,
 the implementation is much more complicated and thus we only implement our optimization for sort merge join.
-Although the exact semantics for how a sort merge join can be found here, the sort merge join still must shuffle data around as it requires that every
+Although the exact semantics for how a sort merge join can be found here\cite{sortmerge}, the sort merge join still must shuffle data around as it requires that every
 key that could intersect should be sent to the same reducer.
 To help achieve this, the sort merge join applies an exchange operator on each of the map outputs. These exchange operators produce
 ShuffleRowRDDS, which for our purposes are equivalent to ShuffledRDDs. In the next stage, each partition in the first ShuffledRowRDD is compared
