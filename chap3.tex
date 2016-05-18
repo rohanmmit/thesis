@@ -13,8 +13,42 @@ All jobs were run ten times, with the last five times being averaged.
 All local jobs were run on a 2013 MacbookPro with 8GB of RAM and 2 cores.
 All distributed jobs were run using the spark/ec2 launch scripts. They were run on 
 four AWS m1.large machines in the us west zone. 
-
 \section{Regular Shuffle}
+
+We compared the performanced of ShuffledRDD vs ShuffledRDD2 both on a local machine and on a distributed cluster.
+
+For the local machine test, we created four mapper partitions. One of these mapper partitions was three times the size of the other mapper partitions.
+We created two reducer partitions. For the the regular ShuffledRDD, each reducer gets two mapper patitions, which results in one reducer partition
+having twice the amount of data. For the ShuffledRDD2, one reducer requests the three bigger map partitions while athe other gets one map partition, resulting in balanced partitions.
+We graph the total amount of data in versus time. As seen in the graph, the ShuffledRDD2 performs better as it is  
+has more balanced reducers.
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale=0.6]{./img/localshuffle.png}
+\caption{ShuffledRDD vs ShuffledRDD2}
+\label{fig:local}
+\end{center}
+This figure measures the performance of joins completed using the ShuffledRDD versus the ShuffledRDD2.
+The ShuffledRDD is in red while the ShuffledRDD2 is in blue. In the ShuffledRDD, reducer 1 gets twice the amount of
+data as in reducer 2, but in the ShuffledRDD2 receive the same amount of data. The x axis indicates how much data was
+shuffled.  
+\end{figure}
+
+For the reducer test, we created 64 mapper partitions. One of these mapper patitions was way bigger and equal to 8 regular mapper partitions.
+We head eight reducers. In the ShuffledRDD, one of these reducers had twice the amount of data as the others, in the ShuffledRDD2 they were all
+balanced.
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale=0.6]{./img/distributedshuffle.png}
+\caption{ShuffledRDD vs ShuffledRDD2}
+\label{fig:distributed}
+\end{center}
+This figure measures the performance of joins completed using the ShuffledRDD versus the ShuffledRDD2.
+The ShuffledRDD is in red while the ShuffledRDD2 is in blue. We had eight reducers. In the ShuffledRDD, one reducer gets twice the amount of
+data as the other reducers, but in the ShuffledRDD2 they all receive the same amount of data. The x axis indicates how much data was
+shuffled.  
+\end{figure}
 
 
 \section{Broadcast and ShuffleJoinRDD}
