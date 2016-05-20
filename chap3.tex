@@ -4,23 +4,22 @@
 %% You can process specific files by typing their names in at the 
 %% \files=
 %% prompt when you run the file main.tex through LaTeX.
-\chapter{Experiment}
+\chapter{Experiments}
 
 \section{Setup}
 
 All jobs were run using the spark interactive shell.
 All jobs were run ten times, with the last five times being averaged.
 All local jobs were run on a 2013 MacbookPro with 8GB of RAM and 2 cores.
-All distributed jobs were run using the spark/ec2 launch scripts. They were run on 
+All distributed jobs were run using the spark-ec2 launch scripts. They were run on 
 four AWS m1.large machines in the us west zone. 
 \section{Regular Shuffle}
 
-We compared the performanced of ShuffledRDD vs ShuffledRDD2 both on a local machine and on a distributed cluster.
+We compared the performance of ShuffledRDD vs ShuffledRDD2 both on a local machine and on a distributed cluster.
 
-For the local machine test, we created four mapper partitions. One of these mapper partitions was three times the size of the other mapper partitions.
-We created two reducer partitions. For the the regular ShuffledRDD, each reducer gets two mapper patitions, which results in one reducer partition
-having twice the amount of data. For the ShuffledRDD2, one reducer requests the three bigger map partitions while athe other gets one map partition, resulting in balanced partitions.
-We graph the total amount of data in versus time. As seen in the graph, the ShuffledRDD2 performs better as it is  
+For the local machine test, we created four mapper partitions. One mapper partition was three times the size of the other mapper partitions.
+We created two reducer partitions. For the the regular ShuffledRDD, each reducer got two mapper patitions, which results in one reducer partition
+having twice the amount of data. For the ShuffledRDD2, one reducer requests the three smaller map partitions while the other received just the bigger partition,resulting in balanced partitions. As seen in Figure~\ref{fig:local}, the ShuffledRDD2 performs better as it is  
 has more balanced reducers.
 \begin{figure}[h]
 \begin{center}
@@ -28,15 +27,15 @@ has more balanced reducers.
 \caption{ShuffledRDD vs ShuffledRDD2}
 \label{fig:local}
 \end{center}
-This figure measures the performance of joins completed using the ShuffledRDD versus the ShuffledRDD2.
-The ShuffledRDD is in red while the ShuffledRDD2 is in blue. In the ShuffledRDD, reducer 1 gets twice the amount of
-data as in reducer 2, but in the ShuffledRDD2 receive the same amount of data. The x axis indicates how much data was
+This figure measures the local machine performance of joins completed using the ShuffledRDD versus the ShuffledRDD2.
+The ShuffledRDD is in red while the ShuffledRDD2 is in blue. In the ShuffledRDD, Reducer 1 gets twice the amount of
+data as in Reducer 2, but in the ShuffledRDD2, Reducer 2 receives the same amount of data. The x axis indicates how much data was
 shuffled.  
 \end{figure}
 
-For the reducer test, we created 64 mapper partitions. One of these mapper patitions was way bigger and equal to 8 regular mapper partitions.
-We head eight reducers. In the ShuffledRDD, one of these reducers had twice the amount of data as the others, in the ShuffledRDD2 they were all
-balanced.
+For the distributed test, we created 64 mapper partitions. One  mapper patitions was significantly bigger and equal to 8 regular mapper partitions.
+We head eight reducers. In the ShuffledRDD, one of these reducers approximately had twice the amount of data as the others, in the ShuffledRDD2 they were all
+balanced. Figure~\ref{fig:distributed} shows that just like in the local tests, ShuffledRDD2 performs better in the distributed tests.
 
 \begin{figure}[h]
 \begin{center}
@@ -55,12 +54,13 @@ shuffled.
 
 For this test, we created a bigger RDD with key-value pairs of (x, 2 * x) with x ranging from 1 to 100 milllion.
 As seen in the Figure~\ref{fig:rddjoin}, we then then manipulated the number of key-value pairs of the smaller RDD, 
-with each key value pairs being (x,x). We measured the performance for the ShuffleJoinRDD and BroadcastJoinRDD on AWS. 
+with each key value pairs being (x,x). We measured the performance for the ShuffleJoinRDD and BroadcastJoinRDD on a
+the distributed cluster. 
 As expected, initially the BroadcastJoinRDD performs better as it requires significantly less network traffic.
 However, it soon becomes slower then the ShuffleJoinRDD as the smaller input RDD increases.
 Increasing the smaller RDD does not dramatically influence the ShuffleJoinRDD as it is more bottlenecked by the bigger RDD and just
 sends pieces of the smaller RDD to each partition. However, this increase significantly influences the BroadcastJoinRDD 
-because transmits the entirety of the smaller RDD to every partition.
+because it transmits the entirety of the smaller RDD to every partition.
 
 \begin{figure}[h]
 \begin{center}
@@ -74,3 +74,29 @@ number of key-value pairs of the small RDD is manipulated along the x axis.
 \end{figure}
 
 \section{Spark SQL join}
+We evaluated the performance of the sort-merge join using the broadcast strategy and the shuffle strategy in Spark SQL
+on a distributed cluster.
+For this test, we created a bigger RDD with key-value pairs of (x, 2 * x) with x ranging from 1 to billlion.
+As seen in the Figure~\ref{fig:final}, we then then manipulated the number of key-value pairs of the smaller RDD, 
+with each key value pairs being (x,x). We then converted these into dataframes, the main interface for Spark Sql, and then
+used Spark SQL to join them. We used 30 partitions for both the shufle and the broadcast tests and turned off map output compression.
+Initially, the broadcast performs better as it requires significantly less network traffic.
+However, it soon becomes slower then the shuffle as the smaller input RDD increases just like what happened with the join RDDs.
+Increasing the smaller input dataset is way worse in the broadcast than the shuffle because the broadcast sends its entirety to each partition
+while the shuffle does not. Thus, if the input dataset is sufficiently small, the shuffle performs better, but otherwise the broadcast performs better.
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale=0.6]{./img/final.png}
+\caption{BroadcastJoinRDD vs ShuffledJoinRDD}
+\label{fig:final}
+\end{center}
+This figure measures the performance of sort-merge join in Spark Sql.
+The broadcast strategy is in blue while the shuffle join is in red. The bigger RDD is fixed with 1 billion key-value pairs, but the 
+number of key-value pairs of the small RDD is manipulated along the x axis.  
+\end{figure}
+
+
+
+
+
